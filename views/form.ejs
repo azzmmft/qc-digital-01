@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>QC Digital</title>
+
+    <link rel="stylesheet" href="/css/form.css">
+</head>
+
+<body>
+
+    <main class="container">
+
+        <h1>Form QC Harian</h1>
+
+        <!-- DATE -->
+        <div class="form-group">
+
+            <label for="date">
+                Tanggal Produksi
+            </label>
+
+            <input
+                type="date"
+                id="date"
+                name="date"
+            >
+
+        </div>
+
+
+        <!-- LINE -->
+        <div class="form-group">
+
+            <label for="line">
+                Line
+            </label>
+
+            <select id="line" name="line">
+
+                <option value="">
+                    Pilih Line
+                </option>
+
+                <% lines.forEach(line => { %>
+
+                    <option value="<%= line %>">
+                        Line <%= line %>
+                    </option>
+
+                <% }) %>
+
+            </select>
+
+        </div>
+
+
+        <!-- PRODUCT -->
+        <div class="form-group">
+
+            <label>
+                Product
+            </label>
+
+            <input
+                type="text"
+                id="product"
+                readonly
+                placeholder="Otomatis berdasarkan line"
+            >
+
+        </div>
+
+
+        <!-- SHIFT -->
+
+        <div class="form-group">
+
+            <label for="shift">
+                Shift
+            </label>
+
+            <select id="shift">
+
+                <option value="1">
+                    Shift 1
+                </option>
+
+                <option value="2">
+                    Shift 2
+                </option>
+
+                <option value="3">
+                    Shift 3
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <!-- ROW CONTAINER -->
+
+        <div id="rows-container">
+
+            <!-- Nanti 24 row dibuat menggunakan JavaScript -->
+
+        </div>
+
+
+        <button
+            type="button"
+            id="save-button"
+        >
+            Simpan Shift
+        </button>
+
+    </main>
+
+
+    <script>
+
+        const lineProducts = <%- JSON.stringify(lineProducts) %>;
+
+        const lineSelect =
+            document.getElementById("line");
+
+        const productInput =
+            document.getElementById("product");
+
+
+        lineSelect.addEventListener("change", function () {
+
+            const line = this.value;
+
+            productInput.value =
+                lineProducts[line] || "";
+
+        });
+
+    </script>
+
+</body>
+
+</html>

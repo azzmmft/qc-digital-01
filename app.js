@@ -18,12 +18,14 @@ app.use(express.urlencoded({ extended: true }));
 // Parse JSON
 app.use(express.json());
 
+// Routes
+const formRoutes = require("./routes/formRoutes");
+app.use("/", formRoutes);
 
-// Test route
+// Home sementara → redirect ke form
 app.get("/", (req, res) => {
-    res.render("login");
+    res.redirect("/form");
 });
-
 
 app.listen(PORT, () => {
     console.log(`QC Digital running at http://localhost:${PORT}`);
