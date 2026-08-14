@@ -16,6 +16,20 @@ function parseQCData(sheetData) {
 
     const data = {};
 
+    // ========================================
+    // NORMALISASI ANGKA
+    // ========================================
+
+    function normalizeNumber(value) {
+
+        if (value === undefined || value === null || value === "") {
+            return "";
+        }
+
+        return String(value).replace(",", ".");
+    }
+
+
     /*
      * Struktur data QC di spreadsheet:
      *
@@ -59,12 +73,13 @@ function parseQCData(sheetData) {
         // Simpan data berdasarkan nomor row
         data[shift][rowNumber] = {
 
-            AA: row[2] ?? "",
-            OT: row[3] ?? "",
-            BBT: row[4] ?? "",
-            N2: row[5] ?? ""
+            AA: normalizeNumber(row[2]),
+            OT: normalizeNumber(row[3]),
+            BBT: normalizeNumber(row[4]),
+            N2: normalizeNumber(row[5])
 
         };
+
     }
 
     return data;

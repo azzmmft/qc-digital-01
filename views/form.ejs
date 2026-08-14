@@ -152,6 +152,7 @@
             <main class="p-4">
                 <%
                     const currentShiftData = existingData[currentShift] || {};
+                    const isTPH = selectedProduct === "TPH";
                 %>
                 <!-- MOBILE -->
                 <div
@@ -209,51 +210,109 @@
                                         </span>
                                     </div>
                                 </div>
-                                <!-- BBT -->
-                                <div>
-                                    <label
-                                        class="block text-center text-xs font-bold text-slate-800 mb-0.5">
-                                        BBT
-                                    </label>
-                                    <div class="relative">
-                                        <input
-                                            type="number"
-                                            step="any"
-                                            inputmode="decimal"
-                                            name="data[<%= row %>][BBT]"
-                                            data-row="<%= row %>"
-                                            data-field="BBT"
-                                            autocomplete="off"
-                                            value="<%= currentShiftData[row]?.BBT ?? '' %>"
-                                            class="qc-input w-full h-11 text-center text-lg rounded-xl bg-qcInputBg border border-slate-300 font-extrabold text-slate-900 focus:outline-none focus:ring-2 focus:ring-qcGreen transition-colors">
-                                        <span
-                                            class="qc-error-dot hidden absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 bg-red-600 rounded-full">
-                                        </span>
+                                <% if (!isTPH) { %>
+                                    <!-- BBT -->
+                                    <div>
+                                        <label
+                                            class="block text-center text-xs font-bold text-slate-800 mb-0.5">
+                                            BBT
+                                        </label>
+                                        <div class="relative">
+                                            <input
+                                                type="number"
+                                                step="any"
+                                                inputmode="decimal"
+                                                name="data[<%= row %>][BBT]"
+                                                data-row="<%= row %>"
+                                                data-field="BBT"
+                                                autocomplete="off"
+                                                value="<%= currentShiftData[row]?.BBT ?? '' %>"
+                                                class="qc-input w-full h-11 text-center text-lg rounded-xl bg-qcInputBg border border-slate-300 font-extrabold text-slate-900 focus:outline-none focus:ring-2 focus:ring-qcGreen transition-colors">
+                                            <span
+                                                class="qc-error-dot hidden absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 bg-red-600 rounded-full">
+                                            </span>
+                                        </div>
                                     </div>
-                                </div>
-                                <!-- N2 -->
-                                <div>
-                                    <label
-                                        class="block text-center text-xs font-bold text-slate-800 mb-0.5">
-                                        N2
-                                    </label>
-                                    <div class="relative">
-                                        <input
-                                            type="number"
-                                            step="any"
-                                            inputmode="decimal"
-                                            name="data[<%= row %>][N2]"
-                                            data-row="<%= row %>"
-                                            data-field="N2"
-                                            autocomplete="off"
-                                            value="<%= currentShiftData[row]?.N2 ?? '' %>"
-                                            class="qc-input w-full h-11 text-center text-lg rounded-xl bg-qcInputBg border border-slate-300 font-extrabold text-slate-900 focus:outline-none focus:ring-2 focus:ring-qcGreen transition-colors">
-                                        <span
-                                            class="qc-error-dot hidden absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 bg-red-600 rounded-full">
-                                        </span>
+
+                                    <!-- N2 -->
+                                    <div>
+                                        <label
+                                            class="block text-center text-xs font-bold text-slate-800 mb-0.5">
+                                            N2
+                                        </label>
+                                        <div class="relative">
+                                            <input
+                                                type="number"
+                                                step="any"
+                                                inputmode="decimal"
+                                                name="data[<%= row %>][N2]"
+                                                data-row="<%= row %>"
+                                                data-field="N2"
+                                                autocomplete="off"
+                                                value="<%= currentShiftData[row]?.N2 ?? '' %>"
+                                                class="qc-input w-full h-11 text-center text-lg rounded-xl bg-qcInputBg border border-slate-300 font-extrabold text-slate-900 focus:outline-none focus:ring-2 focus:ring-qcGreen transition-colors">
+                                            <span
+                                                class="qc-error-dot hidden absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 bg-red-600 rounded-full">
+                                            </span>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
+                                <% } %>
+                                <% if (isTPH) { %>
+                                    <!-- AA* / RETEST AA -->
+                                    <div>
+                                        <label
+                                            class="block text-center text-xs font-bold text-slate-800 mb-0.5">
+                                            AA*
+                                        </label>
+
+                                        <div class="relative">
+                                            <input
+                                                type="number"
+                                                step="any"
+                                                inputmode="decimal"
+                                                name="data[<%= row %>][AA_RETEST]"
+                                                data-row="<%= row %>"
+                                                data-field="AA_RETEST"
+                                                autocomplete="off"
+                                                value="<%= currentShiftData[row]?.AA_RETEST ?? '' %>"
+                                                disabled
+                                                class="qc-input w-full h-11 text-center text-lg rounded-xl bg-qcInputBg border border-slate-300 font-extrabold text-slate-900 focus:outline-none focus:ring-2 focus:ring-qcGreen transition-colors">
+
+                                            <span
+                                                class="qc-error-dot hidden absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 bg-red-600 rounded-full">
+                                            </span>
+                                        </div>
+                                    </div>
+
+
+                                    <!-- OT* / RETEST OT -->
+                                    <div>
+                                        <label
+                                            class="block text-center text-xs font-bold text-slate-800 mb-0.5">
+                                            OT*
+                                        </label>
+
+                                        <div class="relative">
+                                            <input
+                                                type="number"
+                                                step="any"
+                                                inputmode="decimal"
+                                                name="data[<%= row %>][OT_RETEST]"
+                                                data-row="<%= row %>"
+                                                data-field="OT_RETEST"
+                                                autocomplete="off"
+                                                value="<%= currentShiftData[row]?.OT_RETEST ?? '' %>"
+                                                disabled
+                                                class="qc-input w-full h-11 text-center text-lg rounded-xl bg-qcInputBg border border-slate-300 font-extrabold text-slate-900 focus:outline-none focus:ring-2 focus:ring-qcGreen transition-colors">
+
+                                            <span
+                                                class="qc-error-dot hidden absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 bg-red-600 rounded-full">
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                <% } %>
+                             </div>
                         </div>
                     <% } %>
                 </div>
@@ -269,32 +328,65 @@
                                 <th class="py-3 px-3 border-b border-slate-300">
                                     No
                                 </th>
+
                                 <th class="py-3 px-3 border-b border-slate-300">
                                     AA
                                 </th>
+
                                 <th class="py-3 px-3 border-b border-slate-300">
                                     OT
                                 </th>
-                                <th class="py-3 px-3 border-b border-slate-300">
-                                    BBT
-                                </th>
-                                <th class="py-3 px-3 border-b border-slate-300">
-                                    N2
-                                </th>
+
+                                <% if (selectedProduct === "TPH") { %>
+
+                                    <th class="py-3 px-3 border-b border-slate-300">
+                                        AA*
+                                    </th>
+
+                                    <th class="py-3 px-3 border-b border-slate-300">
+                                        OT*
+                                    </th>
+
+                                <% } else { %>
+
+                                    <th class="py-3 px-3 border-b border-slate-300">
+                                        BBT
+                                    </th>
+
+                                    <th class="py-3 px-3 border-b border-slate-300">
+                                        N2
+                                    </th>
+
+                                <% } %>
                             </tr>
                         </thead>
-                        <tbody
-                            class="text-sm font-bold">
+                        <tbody class="text-sm font-bold">
+                            <%
+                                const formFields = selectedProduct === "TPH"
+                                    ? ["AA", "OT", "AA_RETEST", "OT_RETEST"]
+                                    : ["AA", "OT", "BBT", "N2"];
+                            %>
+
                             <% for (let row = 1; row <= 24; row++) { %>
-                                <tr
-                                    class="border-b border-slate-200 hover:bg-slate-50">
-                                    <td
-                                        class="py-2 px-3 text-slate-500 font-mono">
+
+                                <tr class="border-b border-slate-200 hover:bg-slate-50">
+
+                                    <td class="py-2 px-3 text-slate-500 font-mono">
                                         <%= String(row).padStart(2, "0") %>
                                     </td>
-                                    <% ["AA", "OT", "BBT", "N2"].forEach(field => { %>
+
+                                    <% formFields.forEach(field => { %>
+
+                                        <%
+                                            const isRetest =
+                                                field === "AA_RETEST" ||
+                                                field === "OT_RETEST";
+                                        %>
+
                                         <td class="py-2 px-2">
+
                                             <div class="relative">
+
                                                 <input
                                                     type="number"
                                                     step="any"
@@ -303,15 +395,24 @@
                                                     data-row="<%= row %>"
                                                     data-field="<%= field %>"
                                                     autocomplete="off"
+                                                    value="<%= currentShiftData[row]?.[field] ?? '' %>"
+                                                    <%= isRetest ? "disabled" : "" %>
                                                     class="qc-input w-full h-9 text-center rounded-lg bg-qcInputBg border border-slate-300 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-qcGreen">
+
                                                 <span
                                                     class="qc-error-dot hidden absolute left-2 top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-red-600 rounded-full">
                                                 </span>
+
                                             </div>
+
                                         </td>
+
                                     <% }) %>
+
                                 </tr>
+
                             <% } %>
+
                         </tbody>
                     </table>
                 </div>
@@ -463,8 +564,86 @@
             );
 
         }
+        function updateRetestState(row) {
+
+            // Hanya berlaku untuk TPH
+            if (productType !== "TPH") {
+                return;
+            }
 
 
+            // Ambil semua input AA pada row tersebut
+            const aaInputs = document.querySelectorAll(
+                `.qc-input[data-row="${row}"][data-field="AA"]`
+            );
+
+            // Ambil semua input OT pada row tersebut
+            const otInputs = document.querySelectorAll(
+                `.qc-input[data-row="${row}"][data-field="OT"]`
+            );
+
+            // Ambil semua input AA*
+            const aaRetestInputs = document.querySelectorAll(
+                `.qc-input[data-row="${row}"][data-field="AA_RETEST"]`
+            );
+
+            // Ambil semua input OT*
+            const otRetestInputs = document.querySelectorAll(
+                `.qc-input[data-row="${row}"][data-field="OT_RETEST"]`
+            );
+
+
+            // Kalau input tidak ditemukan, hentikan
+            if (
+                aaInputs.length === 0 ||
+                otInputs.length === 0 ||
+                aaRetestInputs.length === 0 ||
+                otRetestInputs.length === 0
+            ) {
+                return;
+            }
+
+
+            /*
+            * Ambil nilai AA dan OT.
+            *
+            * Karena mobile dan desktop berisi
+            * data yang sama, kita cukup mengambil
+            * nilai dari input pertama.
+            */
+
+            const aaValue = aaInputs[0].value;
+            const otValue = otInputs[0].value;
+
+
+            // =========================
+            // AA → AA*
+            // =========================
+
+            const aaOut =
+                isOutOfStandard("AA", aaValue);
+
+            aaRetestInputs.forEach(input => {
+
+                input.disabled = !aaOut;
+
+            });
+
+
+            // =========================
+            // OT → OT*
+            // =========================
+
+            const otOut =
+                isOutOfStandard("OT", otValue);
+
+            otRetestInputs.forEach(input => {
+
+                input.disabled = !otOut;
+
+            });
+
+        }
 
         /*
          * Update tampilan input.
@@ -525,6 +704,15 @@
                     "hidden"
                 );
 
+            }
+            // Update status AA*/OT* untuk TPH
+            if (
+                productType === "TPH" &&
+                (field === "AA" || field === "OT")
+            ) {
+                updateRetestState(
+                    input.dataset.row
+                );
             }
 
         }
