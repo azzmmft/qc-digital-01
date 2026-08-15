@@ -319,6 +319,7 @@
 
                 <!-- DESKTOP TABLE -->
                 <div
+                    id="desktop-table-container"
                     class="hidden md:block overflow-x-auto border border-slate-200 rounded-lg shadow-sm">
                     <table
                         class="w-full text-center border-collapse">
@@ -790,6 +791,63 @@
          */
 
         updateProgress();
+
+        // =====================================================
+        // PASTIKAN HANYA INPUT YANG TERLIHAT YANG DI-SUBMIT
+        // =====================================================
+
+        const qcForm = document.getElementById("qcForm");
+
+        qcForm.addEventListener("submit", function () {
+
+            const isMobile =
+                window.matchMedia("(max-width: 767px)").matches;
+
+            const mobileContainer =
+                document.getElementById("mobile-card-container");
+
+            const desktopContainer =
+                document.getElementById("desktop-table-container");
+
+            if (isMobile) {
+
+                // HP:
+                // Aktifkan input mobile
+                // Nonaktifkan input desktop
+
+                mobileContainer
+                    .querySelectorAll("input")
+                    .forEach(input => {
+                        input.disabled = false;
+                    });
+
+                desktopContainer
+                    .querySelectorAll("input")
+                    .forEach(input => {
+                        input.disabled = true;
+                    });
+
+            } else {
+
+                // DESKTOP:
+                // Nonaktifkan input mobile
+                // Aktifkan input desktop
+
+                mobileContainer
+                    .querySelectorAll("input")
+                    .forEach(input => {
+                        input.disabled = true;
+                    });
+
+                desktopContainer
+                    .querySelectorAll("input")
+                    .forEach(input => {
+                        input.disabled = false;
+                    });
+
+            }
+
+        });
 
     </script>
 
