@@ -84,47 +84,53 @@
 
             <!-- SHIFT NAVIGATION -->
             <div class="flex justify-center items-center gap-2 my-4">
+
                 <% for (let shift = 1; shift <= 3; shift++) { %>
-                    <% if (shift < currentShift) { %>
-                        <!-- SHIFT SELESAI -->
-                        <button
-                            type="button"
-                            class="bg-qcShift1 text-white font-bold text-xs px-3 py-1.5 rounded-md flex items-center gap-1 shadow-sm">
+
+                    <% if (shift === currentShift) { %>
+
+                        <!-- SHIFT YANG SEDANG DIPILIH -->
+                        <a
+                            href="/form?line=<%= selectedLine %>&date=<%= encodeURIComponent(selectedDate) %>&shift=<%= shift %>"
+                            class="bg-qcShift2 text-slate-900 font-bold text-xs px-3 py-1.5 rounded-md flex items-center gap-1.5 shadow-sm hover:opacity-90 transition-opacity">
+
                             <span>Shift <%= shift %></span>
+
                             <svg
                                 class="w-3.5 h-3.5"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24">
+
                                 <path
                                     stroke-linecap="round"
                                     stroke-linejoin="round"
                                     stroke-width="3"
                                     d="M5 13l4 4L19 7" />
+
                             </svg>
-                        </button>
-                    <% } else if (shift === currentShift) { %>
-                        <!-- SHIFT AKTIF -->
-                        <button
-                            type="button"
-                            class="bg-qcShift2 text-slate-900 font-bold text-xs px-3 py-1.5 rounded-md flex items-center gap-1.5 shadow-sm">
-                            <span>Shift <%= shift %></span>
-                            <span
-                                class="w-2.5 h-2.5 rounded-full bg-amber-800 inline-block">
-                            </span>
-                        </button>
+
+                        </a>
+
                     <% } else { %>
-                        <!-- SHIFT BELUM DIISI -->
-                        <button
-                            type="button"
-                            class="bg-qcShift3 text-slate-700 font-bold text-xs px-3 py-1.5 rounded-md flex items-center gap-1.5 border border-slate-300">
+
+                        <!-- SHIFT LAIN -->
+                        <a
+                            href="/form?line=<%= selectedLine %>&date=<%= encodeURIComponent(selectedDate) %>&shift=<%= shift %>"
+                            class="bg-qcShift3 text-slate-700 font-bold text-xs px-3 py-1.5 rounded-md flex items-center gap-1.5 border border-slate-300 hover:bg-slate-200 transition-colors">
+
                             <span>Shift <%= shift %></span>
+
                             <span
                                 class="w-2.5 h-2.5 rounded-full border border-slate-600 inline-block">
                             </span>
-                        </button>
+
+                        </a>
+
                     <% } %>
+
                 <% } %>
+
             </div>
             <!-- DOWNLOAD PDF -->
             <div class="mt-3">
