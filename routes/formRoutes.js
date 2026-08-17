@@ -8,7 +8,9 @@ const {
     saveShiftData
 } = require("../services/googleSheetsService");
 
-
+const {
+    createQCPDF
+} = require("../services/pdfService");
 // ========================================
 // HELPER
 // ========================================
@@ -551,5 +553,119 @@ router.post("/form/save", async (req, res) => {
 
 });
 
+router.get("/form/pdf", async (req, res) => {
+
+    try {
+
+        console.log("");
+        console.log("================================");
+        console.log("GENERATE QC PDF");
+        console.log("================================");
+
+        // ========================================
+        // PARAMETER
+        // ========================================
+
+        const line =
+            req.query.line || "10";
+
+        const date =
+            req.query.date || "03 Januari 2026";
+
+        // ========================================
+        // PRODUK
+        // ========================================
+
+        const product =
+            LINE_PRODUCTS[line];
+
+        if (!product) {
+            throw new Error(
+                `Product untuk Line ${line} tidak ditemukan.`
+            );
+        }
+
+        // ========================================
+        // NAMA SHEET
+        // ========================================
+
+        const sheetName =
+            "2026-01-03_L" + line;
+
+        console.log("Line    :", line);
+        console.log("Date    :", date);
+        console.log("Product :", product);
+        console.log("Sheet   :", sheetName);
+
+        // ========================================
+        // AMBIL DATA DARI GOOGLE SHEETS
+        // ========================================
+
+        const sheetData =
+            await getSheetData(sheetName);
+
+        // ========================================
+        // PARSE DATA
+        // ========================================
+
+        const existingData =
+            parseQCData(
+                sheetData,
+                product
+            );
+
+        console.log(
+            "Data untuk PDF:"
+        );
+
+        console.dir(
+            existingData,
+            {
+                depth: null
+            }
+        );
+
+        // ========================================
+        // GENERATE PDF
+        // ========================================
+
+        createQCPDF(
+            res,
+            {
+                date,
+                line,
+                product,
+                existingData
+            }
+        );
+
+    } catch (error) {
+
+        console.error("");
+        console.error(
+            "================================"
+        );
+
+        console.error(
+            "GAGAL GENERATE PDF"
+        );
+
+        console.error(
+            "================================"
+        );
+
+        console.error(error);
+
+        if (!res.headersSent) {
+
+            res.status(500).send(
+                `Gagal membuat PDF.<br><br>${error.message}`
+            );
+
+        }
+
+    }
+
+});
 
 module.exports = router;

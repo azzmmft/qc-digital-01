@@ -134,21 +134,24 @@
             </div>
             <!-- DOWNLOAD PDF -->
             <div class="mt-3">
-                <button
-                    type="button"
-                    disabled
-                    class="w-full bg-qcGreen/50 text-white font-bold py-2 px-4 rounded-md text-sm flex items-center justify-center gap-2 cursor-not-allowed">
+                <a
+                    href="/form/pdf?line=<%= selectedLine %>&date=<%= encodeURIComponent(selectedDate) %>&shift=<%= currentShift %>"
+                    class="w-full bg-qcGreen hover:bg-qcGreen/50 text-white font-bold py-2 px-4 rounded-md text-sm flex items-center justify-center gap-2 transition-colors duration-200"
+                >
                     <span>Download PDF</span>
+
                     <svg
                         class="w-4 h-4"
                         fill="currentColor"
-                        viewBox="0 0 20 20">
+                        viewBox="0 0 20 20"
+                    >
                         <path
                             fill-rule="evenodd"
                             d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z"
-                            clip-rule="evenodd" />
+                            clip-rule="evenodd"
+                        />
                     </svg>
-                </button>
+                </a>
             </div>
         </header>
 
