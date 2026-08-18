@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>QC Digital - Pilih Laporan</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        qcGreen: "#178b8e",
+                        qcGreenHover: "#137477",
+                        qcCardBg: "#eaeaea",
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex items-center justify-center p-4">
+
+
+    <!-- ========================================= -->
+    <!-- CARD UTAMA -->
+    <!-- ========================================= -->
+
+    <div
+        class="bg-white rounded-2xl shadow-2xl border border-slate-700/20 p-6 sm:p-8 w-full max-w-sm md:max-w-2xl mx-auto transition-all">
+
+
+        <!-- ========================================= -->
+        <!-- HEADER -->
+        <!-- ========================================= -->
+
+        <div class="text-center mb-6 md:mb-8">
+
+            <h1
+                class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+
+                QC DIGITAL
+
+            </h1>
+
+            <p
+                class="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wider mt-1">
+
+                Pilih Laporan QC
+
+            </p>
+
+        </div>
+
+
+
+        <!-- ========================================= -->
+        <!-- FORM -->
+        <!-- ========================================= -->
+
+        <form
+            action="/select-report"
+            method="GET"
+            class="space-y-4 md:space-y-0 md:grid md:grid-cols-2 md:gap-4 md:items-end">
+
+
+            <!-- ========================================= -->
+            <!-- TANGGAL PRODUKSI -->
+            <!-- ========================================= -->
+
+            <div>
+
+                <label
+                    for="tanggal_produksi"
+                    class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+
+                    Tanggal Produksi
+
+                </label>
+
+
+                <input
+                    type="date"
+                    id="tanggal_produksi"
+                    name="date"
+                    required
+                    class="w-full h-12 px-3.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-qcGreen focus:border-qcGreen focus:bg-white transition-colors cursor-pointer">
+
+            </div>
+
+
+
+            <!-- ========================================= -->
+            <!-- LINE -->
+            <!-- ========================================= -->
+
+            <div>
+
+                <label
+                    for="line_production"
+                    class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+
+                    Line
+
+                </label>
+
+
+                <div class="relative">
+
+                    <select
+                        id="line_production"
+                        name="line"
+                        required
+                        class="w-full h-12 pl-3.5 pr-10 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-qcGreen focus:border-qcGreen focus:bg-white transition-colors appearance-none cursor-pointer">
+
+                        <option value="1">
+                            Line 1 (Teh Pucuk Harum)
+                        </option>
+
+                        <option value="2">
+                            Line 2 (Teh Pucuk Harum)
+                        </option>
+
+                        <option value="3">
+                            Line 3 (Le Minerale)
+                        </option>
+
+                        <option value="4">
+                            Line 4 (Teh Pucuk Harum)
+                        </option>
+
+                        <option value="10" selected>
+                            Line 10 (Le Minerale)
+                        </option>
+
+                    </select>
+
+
+                    <!-- Custom Arrow -->
+
+                    <div
+                        class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-600">
+
+                        <svg
+                            class="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24">
+
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2.5"
+                                d="M19 9l-7 7-7-7">
+                            </path>
+
+                        </svg>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- ========================================= -->
+            <!-- SHIFT AWAL -->
+            <!-- ========================================= -->
+
+            <input
+                type="hidden"
+                name="shift"
+                value="1">
+
+
+
+            <!-- ========================================= -->
+            <!-- BUTTON MULAI QC -->
+            <!-- ========================================= -->
+
+            <div
+                class="pt-2 md:pt-4 md:col-span-2">
+
+                <button
+                    type="submit"
+                    class="w-full h-12 bg-qcGreen hover:bg-qcGreenHover active:scale-[0.99] text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm sm:text-base tracking-wide">
+
+                    <span>
+                        MULAI QC
+                    </span>
+
+
+                    <svg
+                        class="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2.5"
+                            d="M14 5l7 7m0 0l-7 7m7-7H3">
+                        </path>
+
+                    </svg>
+
+                </button>
+
+            </div>
+
+        </form>
+
+
+
+        <!-- ========================================= -->
+        <!-- PRODUCT PREVIEW -->
+        <!-- ========================================= -->
+
+        <div
+            class="mt-6 p-3 bg-slate-100 rounded-xl border border-slate-200 text-center">
+
+            <span
+                class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+
+                Produk Terdeteksi
+
+            </span>
+
+
+            <span
+                id="product-name"
+                class="text-sm font-black text-slate-800">
+
+                Le Minerale (LM)
+
+            </span>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ========================================= -->
+    <!-- JAVASCRIPT -->
+    <!-- ========================================= -->
+
+    <script>
+
+        const lineSelect =
+            document.getElementById("line_production");
+
+        const productNameDisplay =
+            document.getElementById("product-name");
+
+        const dateInput =
+            document.getElementById("tanggal_produksi");
+
+
+
+        // =========================================
+        // DEFAULT TANGGAL = HARI INI
+        // =========================================
+
+        const today =
+            new Date();
+
+        const year =
+            today.getFullYear();
+
+        const month =
+            String(today.getMonth() + 1).padStart(2, "0");
+
+        const day =
+            String(today.getDate()).padStart(2, "0");
+
+        dateInput.value =
+            `${year}-${month}-${day}`;
+
+
+
+        // =========================================
+        // LINE → PRODUCT
+        // =========================================
+
+        const lineMap = {
+
+            "1": "Teh Pucuk Harum (TPH)",
+
+            "2": "Teh Pucuk Harum (TPH)",
+
+            "3": "Le Minerale (LM)",
+
+            "4": "Teh Pucuk Harum (TPH)",
+
+            "10": "Le Minerale (LM)"
+
+        };
+
+
+
+        // =========================================
+        // UPDATE PRODUCT
+        // =========================================
+
+        function updateProduct() {
+
+            const selectedValue =
+                lineSelect.value;
+
+            productNameDisplay.textContent =
+                lineMap[selectedValue] || "-";
+
+        }
+
+
+
+        lineSelect.addEventListener(
+            "change",
+            updateProduct
+        );
+
+
+
+        // Jalankan sekali saat halaman dibuka
+
+        updateProduct();
+
+    </script>
+
+</body>
+
+</html>
