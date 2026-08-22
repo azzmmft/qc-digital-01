@@ -1,9 +1,16 @@
+const session = require("express-session");
 const express = require("express");
 const path = require("path");
 require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+app.use(session({
+    secret: process.env.SESSION_SECRET || "default-secret",
+    resave: false,
+    saveUninitialized: false
+}));
 
 // EJS
 app.set("view engine", "ejs");
@@ -19,12 +26,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // Routes
+const authRoutes = require("./routes/authRoutes");
 const formRoutes = require("./routes/formRoutes");
+app.use("/", authRoutes);
 app.use("/", formRoutes);
 
 // Home sementara → redirect ke form
 app.get("/", (req, res) => {
-    res.redirect("/form");
+    res.redirect("/login");
 });
 
 app.listen(PORT, () => {

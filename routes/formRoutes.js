@@ -1,6 +1,10 @@
 const express = require("express");
 const router = express.Router();
 
+const {
+    requireLogin
+} = require("../middleware/authMiddleware");
+
 const LINE_PRODUCTS = require("../config/lineProducts");
 
 const {
@@ -233,8 +237,10 @@ function getExaminerName(existingData, shift) {
 // SELECT REPORT
 // ============================================================
 
-router.get("/select-report", (req, res) => {
-
+router.get(
+    "/select-report",
+    requireLogin,
+    (req, res) => {
     try {
 
         const date =
@@ -314,7 +320,8 @@ router.get("/select-report", (req, res) => {
         return res.redirect(
             `/form?line=${encodeURIComponent(line)}` +
             `&date=${encodeURIComponent(date)}` +
-            `&shift=${shift}`
+            `&shift=${shift}` +
+            `&saved=1`
         );
 
     }
@@ -340,7 +347,10 @@ router.get("/select-report", (req, res) => {
 // FORM PAGE
 // ============================================================
 
-router.get("/form", async (req, res) => {
+router.get(
+    "/form",
+    requireLogin,
+    async (req, res) => {
 
     try {
 
@@ -362,6 +372,8 @@ router.get("/form", async (req, res) => {
 
         const currentShift =
             Number(req.query.shift) || 1;
+
+        const saved = req.query.saved === "1";
 
 
         // ====================================================
@@ -556,7 +568,9 @@ router.get("/form", async (req, res) => {
 
                 existingData,
 
-                examinerName
+                examinerName,
+
+                saved
 
             }
         );
@@ -598,7 +612,10 @@ router.get("/form", async (req, res) => {
 // SAVE SHIFT
 // ========================================
 
-router.post("/form/save", async (req, res) => {
+router.post(
+    "/form/save",
+    requireLogin,
+    async (req, res) => {
 
     try {
 
@@ -965,7 +982,8 @@ router.post("/form/save", async (req, res) => {
         res.redirect(
             `/form?line=${encodeURIComponent(line)}` +
             `&date=${encodeURIComponent(dateISO)}` +
-            `&shift=${shift}`
+            `&shift=${shift}` +
+            `&saved=1`
         );
 
 
@@ -1004,7 +1022,10 @@ router.post("/form/save", async (req, res) => {
 // DOWNLOAD PDF
 // ============================================================
 
-router.get("/form/pdf", async (req, res) => {
+router.get(
+    "/form/pdf",
+    requireLogin,
+    async (req, res) => {
 
     try {
 
