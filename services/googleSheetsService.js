@@ -5,7 +5,8 @@ const spreadsheetId =
 
 const {
     getDataRange,
-    getShiftDataRange
+    getShiftDataRange,
+    getExaminerRange
 } = require("../config/sheetMapping");
 
 
@@ -26,9 +27,7 @@ async function getSheetData(sheetName) {
 
             });
 
-
         return response.data.values || [];
-
 
     } catch (error) {
 
@@ -77,9 +76,7 @@ async function updateRange(
 
         });
 
-
         return true;
-
 
     } catch (error) {
 
@@ -115,7 +112,6 @@ async function saveRowData(
             row
         );
 
-
     await updateRange(
 
         sheetName,
@@ -135,7 +131,6 @@ async function saveRowData(
         ]]
 
     );
-
 
     return {
 
@@ -219,7 +214,7 @@ async function saveShiftData(
 
 
     // ========================================
-    // BENTUK DATA UNTUK GOOGLE SHEETS
+    // BENTUK DATA
     // ========================================
 
     const values =
@@ -333,7 +328,7 @@ async function saveShiftData(
 
 
     // ========================================
-    // WRITE
+    // WRITE DATA QC
     // ========================================
 
     await updateRange(
@@ -371,6 +366,135 @@ async function saveShiftData(
 
 
 // ========================================
+// SAVE NAMA PEMERIKSA
+// ========================================
+
+async function saveExaminerName(
+    sheetName,
+    shift,
+    examinerName
+) {
+
+    // ========================================
+    // VALIDASI SHIFT
+    // ========================================
+
+    if (
+        ![1, 2, 3].includes(
+            Number(shift)
+        )
+    ) {
+
+        throw new Error(
+            "Shift pemeriksa harus 1, 2, atau 3."
+        );
+
+    }
+
+
+    // ========================================
+    // VALIDASI NAMA
+    // ========================================
+
+    const name =
+        String(
+            examinerName || ""
+        ).trim();
+
+
+    if (!name) {
+
+        throw new Error(
+            "Nama pemeriksa tidak boleh kosong."
+        );
+
+    }
+
+
+    // ========================================
+    // RANGE PEMERIKSA
+    // ========================================
+
+    const range =
+        getExaminerRange(
+            Number(shift)
+        );
+
+
+    // ========================================
+    // 24 ROW NAMA YANG SAMA
+    // ========================================
+
+    const values =
+        Array.from(
+            { length: 24 },
+            () => [name]
+        );
+
+
+    console.log("");
+    console.log(
+        "Menyimpan nama pemeriksa..."
+    );
+
+    console.log(
+        "Sheet :",
+        sheetName
+    );
+
+    console.log(
+        "Shift :",
+        shift
+    );
+
+    console.log(
+        "Nama  :",
+        name
+    );
+
+    console.log(
+        "Range :",
+        range
+    );
+
+
+    // ========================================
+    // WRITE
+    // ========================================
+
+    await updateRange(
+
+        sheetName,
+
+        range,
+
+        values
+
+    );
+
+
+    // ========================================
+    // RETURN
+    // ========================================
+
+    return {
+
+        sheetName,
+
+        shift:
+            Number(shift),
+
+        examinerName:
+            name,
+
+        range
+
+    };
+
+}
+
+
+// ========================================
 // EXPORT
 // ========================================
 
@@ -382,6 +506,8 @@ module.exports = {
 
     saveRowData,
 
-    saveShiftData
+    saveShiftData,
+
+    saveExaminerName
 
 };

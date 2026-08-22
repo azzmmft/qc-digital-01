@@ -5,7 +5,8 @@ const LINE_PRODUCTS = require("../config/lineProducts");
 
 const {
     getSheetData,
-    saveShiftData
+    saveShiftData,
+    saveExaminerName
 } = require("../services/googleSheetsService");
 
 const {
@@ -166,19 +167,11 @@ function parseQCData(sheetData, product) {
         if (product === "TPH") {
 
             data[shift][rowNumber] = {
-
-                AA:
-                    normalizeNumber(row[2]),
-
-                OT:
-                    normalizeNumber(row[3]),
-
-                AA_RETEST:
-                    normalizeNumber(row[4]),
-
-                OT_RETEST:
-                    normalizeNumber(row[5])
-
+                AA: normalizeNumber(row[2]),
+                OT: normalizeNumber(row[3]),
+                AA_RETEST: normalizeNumber(row[4]),
+                OT_RETEST: normalizeNumber(row[5]),
+                examinerName: row[6] || ""
             };
 
         }
@@ -191,19 +184,11 @@ function parseQCData(sheetData, product) {
         else {
 
             data[shift][rowNumber] = {
-
-                AA:
-                    normalizeNumber(row[2]),
-
-                OT:
-                    normalizeNumber(row[3]),
-
-                BBT:
-                    normalizeNumber(row[4]),
-
-                N2:
-                    normalizeNumber(row[5])
-
+                AA: normalizeNumber(row[2]),
+                OT: normalizeNumber(row[3]),
+                BBT: normalizeNumber(row[4]),
+                N2: normalizeNumber(row[5]),
+                examinerName: row[6] || ""
             };
 
         }
@@ -211,6 +196,36 @@ function parseQCData(sheetData, product) {
     }
 
     return data;
+}
+
+// ========================================
+// AMBIL NAMA PEMERIKSA
+// ========================================
+
+function getExaminerName(existingData, shift) {
+
+    const shiftData =
+        existingData?.[String(shift)] ||
+        existingData?.[shift];
+
+    if (!shiftData) {
+        return "";
+    }
+
+    for (const rowNumber of Object.keys(shiftData)) {
+
+        const examiner =
+            shiftData[rowNumber]?.examinerName;
+
+        if (
+            examiner &&
+            String(examiner).trim() !== ""
+        ) {
+            return String(examiner).trim();
+        }
+    }
+
+    return "";
 }
 
 
@@ -470,6 +485,12 @@ router.get("/form", async (req, res) => {
             sheetData
         );
 
+        const examinerCells = {
+            1: sheetData[0]?.[7] || "",
+            2: sheetData[1]?.[7] || "",
+            3: sheetData[2]?.[7] || ""
+        };
+
 
         // ====================================================
         // PARSE EXISTING DATA
@@ -480,13 +501,23 @@ router.get("/form", async (req, res) => {
                 sheetData,
                 selectedProduct
             );
-
+    
 
         console.log(
             "Existing Data:",
             existingData
         );
 
+        const examinerName =
+            getExaminerName(
+                existingData,
+                currentShift
+            );
+
+        console.log(
+            "Nama Pemeriksa:",
+            examinerName || "(belum ada)"
+        );
 
         // ====================================================
         // RENDER FORM
@@ -523,7 +554,9 @@ router.get("/form", async (req, res) => {
 
                 sheetData,
 
-                existingData
+                existingData,
+
+                examinerName
 
             }
         );
@@ -561,6 +594,10 @@ router.get("/form", async (req, res) => {
 // SAVE SHIFT
 // ============================================================
 
+// ========================================
+// SAVE SHIFT
+// ========================================
+
 router.post("/form/save", async (req, res) => {
 
     try {
@@ -571,47 +608,56 @@ router.post("/form/save", async (req, res) => {
         console.log("================================");
 
 
-        // ====================================================
+        // ========================================
         // METADATA
-        // ====================================================
+        // ========================================
 
         const line =
-            req.body.line;
+            String(req.body.line || "").trim();
 
         const dateISO =
-            req.body.date;
+            String(req.body.date || "").trim();
 
         const product =
-            req.body.product;
+            String(req.body.product || "").trim();
 
         const shift =
             Number(req.body.shift);
 
+        console.log("BODY DITERIMA:");
+        console.dir(req.body, {
+            depth: null
+        });
 
+        const examinerName =
+            normalizeFormValue(
+                req.body.examinerName
+            ).trim();
+
+        console.log("================================");
+        console.log("DEBUG EXAMINER");
+        console.log("req.body.examinerName :", req.body.examinerName);
+        console.log("typeof                 :", typeof req.body.examinerName);
+        console.log("FULL BODY:");
+        console.dir(req.body, {
+            depth: null
+        });
+        console.log("================================");
+
+
+        console.log("Line       :", line);
+        console.log("Date ISO   :", dateISO);
+        console.log("Product    :", product);
+        console.log("Shift      :", shift);
         console.log(
-            "Line    :",
-            line
+            "Examiner   :",
+            examinerName || "(kosong)"
         );
 
-        console.log(
-            "Date    :",
-            dateISO
-        );
 
-        console.log(
-            "Product :",
-            product
-        );
-
-        console.log(
-            "Shift   :",
-            shift
-        );
-
-
-        // ====================================================
-        // VALIDASI
-        // ====================================================
+        // ========================================
+        // VALIDASI LINE
+        // ========================================
 
         if (!line) {
 
@@ -622,32 +668,96 @@ router.post("/form/save", async (req, res) => {
         }
 
 
+        if (!LINE_PRODUCTS[line]) {
+
+            throw new Error(
+                `Line ${line} tidak terdaftar.`
+            );
+
+        }
+
+
+        // ========================================
+        // VALIDASI TANGGAL
+        // ========================================
+
         if (!dateISO) {
 
             throw new Error(
-                "Tanggal tidak ditemukan."
+                "Tanggal produksi tidak ditemukan."
             );
 
         }
 
 
-        if (!isValidISODate(dateISO)) {
+        // Pastikan format YYYY-MM-DD
+
+        const isoDateRegex =
+            /^\d{4}-\d{2}-\d{2}$/;
+
+
+        if (!isoDateRegex.test(dateISO)) {
 
             throw new Error(
-                `Tanggal tidak valid: ${dateISO}`
+                `Format tanggal tidak valid: ${dateISO}`
             );
 
         }
 
 
-        if (!product) {
+        // Pastikan benar-benar tanggal valid
+
+        const parsedDate =
+            new Date(`${dateISO}T00:00:00`);
+
+
+        if (
+            Number.isNaN(
+                parsedDate.getTime()
+            )
+        ) {
 
             throw new Error(
-                "Product tidak ditemukan."
+                `Tanggal produksi tidak valid: ${dateISO}`
             );
 
         }
 
+
+        // ========================================
+        // VALIDASI PRODUCT
+        // ========================================
+
+        if (
+            product !== "TPH" &&
+            product !== "LM"
+        ) {
+
+            throw new Error(
+                `Product tidak valid: ${product}`
+            );
+
+        }
+
+
+        // Pastikan product sesuai dengan line
+
+        const expectedProduct =
+            LINE_PRODUCTS[line];
+
+
+        if (expectedProduct !== product) {
+
+            throw new Error(
+                `Product ${product} tidak sesuai dengan Line ${line}.`
+            );
+
+        }
+
+
+        // ========================================
+        // VALIDASI SHIFT
+        // ========================================
 
         if (
             ![1, 2, 3].includes(shift)
@@ -660,26 +770,27 @@ router.post("/form/save", async (req, res) => {
         }
 
 
-        // ====================================================
-        // NAMA SHEET
-        // ====================================================
+        // ========================================
+        // NAMA SHEET DINAMIS
+        // ========================================
 
         const sheetName =
-            getSheetName(
-                dateISO,
-                line
-            );
+            `${dateISO}_L${line}`;
 
 
-        console.log(
-            "Sheet tujuan:",
-            sheetName
-        );
+        console.log("");
+        console.log("TARGET GOOGLE SHEETS");
+        console.log("--------------------------------");
+        console.log("Sheet :", sheetName);
+        console.log("Line  :", line);
+        console.log("Date  :", dateISO);
+        console.log("Shift :", shift);
+        console.log("--------------------------------");
 
 
-        // ====================================================
+        // ========================================
         // DATA FORM
-        // ====================================================
+        // ========================================
 
         const formData =
             req.body.data || [];
@@ -687,18 +798,26 @@ router.post("/form/save", async (req, res) => {
 
         console.log(
             "Jumlah data diterima:",
-            formData.length
+            Array.isArray(formData)
+                ? formData.length
+                : "BUKAN ARRAY"
         );
 
 
-        // ====================================================
-        // HARUS 24 ROW
-        // ====================================================
+        // ========================================
+        // VALIDASI FORM DATA
+        // ========================================
 
-        if (
-            !Array.isArray(formData) ||
-            formData.length !== 24
-        ) {
+        if (!Array.isArray(formData)) {
+
+            throw new Error(
+                "Data form tidak valid."
+            );
+
+        }
+
+
+        if (formData.length !== 24) {
 
             throw new Error(
                 `Data form harus memiliki 24 row. Diterima: ${formData.length}`
@@ -707,9 +826,9 @@ router.post("/form/save", async (req, res) => {
         }
 
 
-        // ====================================================
-        // BENTUKKAN ROW
-        // ====================================================
+        // ========================================
+        // BENTUKKAN DATA 24 ROW
+        // ========================================
 
         const rows =
             formData.map(
@@ -719,9 +838,9 @@ router.post("/form/save", async (req, res) => {
                         index + 1;
 
 
-                    // ========================================
+                    // ====================================
                     // TPH
-                    // ========================================
+                    // ====================================
 
                     if (product === "TPH") {
 
@@ -755,9 +874,9 @@ router.post("/form/save", async (req, res) => {
                     }
 
 
-                    // ========================================
+                    // ====================================
                     // LM
-                    // ========================================
+                    // ====================================
 
                     return {
 
@@ -790,14 +909,12 @@ router.post("/form/save", async (req, res) => {
             );
 
 
-        // ====================================================
+        // ========================================
         // DEBUG
-        // ====================================================
+        // ========================================
 
-        console.log(
-            "Data yang akan disimpan:"
-        );
-
+        console.log("");
+        console.log("DATA YANG AKAN DISIMPAN:");
         console.dir(
             rows,
             {
@@ -806,9 +923,9 @@ router.post("/form/save", async (req, res) => {
         );
 
 
-        // ====================================================
-        // SAVE GOOGLE SHEETS
-        // ====================================================
+        // ========================================
+        // SAVE KE GOOGLE SHEETS
+        // ========================================
 
         const result =
             await saveShiftData(
@@ -819,18 +936,31 @@ router.post("/form/save", async (req, res) => {
             );
 
 
-        console.log(
-            "SAVE BERHASIL:"
-        );
+        console.log("");
+        console.log("SAVE BERHASIL:");
+        console.log(result);
+        
+        const examinerResult =
+            await saveExaminerName(
+                sheetName,
+                shift,
+                examinerName
+            );
 
         console.log(
-            result
+            "Examiner:",
+            examinerName || "(belum disimpan)"
         );
 
 
-        // ====================================================
-        // REDIRECT
-        // ====================================================
+        console.log(
+            "================================"
+        );
+
+
+        // ========================================
+        // REDIRECT KEMBALI KE FORM
+        // ========================================
 
         res.redirect(
             `/form?line=${encodeURIComponent(line)}` +
@@ -838,9 +968,8 @@ router.post("/form/save", async (req, res) => {
             `&shift=${shift}`
         );
 
-    }
 
-    catch (error) {
+    } catch (error) {
 
         console.error("");
         console.error(
@@ -858,9 +987,13 @@ router.post("/form/save", async (req, res) => {
         console.error(error);
 
 
-        res.status(500).send(
-            `Gagal menyimpan data QC.<br><br>${error.message}`
-        );
+        if (!res.headersSent) {
+
+            res.status(500).send(
+                `Gagal menyimpan data QC.<br><br>${error.message}`
+            );
+
+        }
 
     }
 

@@ -157,6 +157,25 @@
 
         <!-- FORM -->
         <form id="qcForm" method="POST" action="/form/save">
+            <!-- NAMA PEMERIKSA -->
+            <div class="px-4 mb-4">
+                <label
+                    for="examinerName"
+                    class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5"
+                >
+                    Nama Pemeriksa
+                </label>
+
+                <input
+                    type="text"
+                    id="examinerName"
+                    name="examinerName"
+                    value="<%= examinerName || '' %>"
+                    autocomplete="name"
+                    placeholder="Masukkan nama pemeriksa"
+                    class="w-full h-11 px-3.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-qcGreen focus:border-qcGreen focus:bg-white transition-colors"
+                >
+            </div>
             
             <main class="p-4">
                 <%
@@ -805,7 +824,103 @@
         // PASTIKAN HANYA INPUT YANG TERLIHAT YANG DI-SUBMIT
         // =====================================================
 
-        const qcForm = document.getElementById("qcForm");
+        const qcForm =
+            document.getElementById("qcForm");
+
+        qcForm.addEventListener(
+            "submit",
+            function () {
+
+                // =========================================
+                // SINKRONKAN NAMA PEMERIKSA
+                // =========================================
+
+                if (
+                    examinerNameInput &&
+                    examinerNameHidden
+                ) {
+
+                    examinerNameHidden.value =
+                        examinerNameInput.value.trim();
+
+                }
+
+
+                // =========================================
+                // DEBUG
+                // =========================================
+
+                console.log(
+                    "Examiner sebelum submit:",
+                    examinerNameHidden?.value
+                );
+
+
+                // =========================================
+                // PASTIKAN HANYA INPUT YANG TERLIHAT
+                // YANG DI-SUBMIT
+                // =========================================
+
+                const isMobile =
+                    window.matchMedia(
+                        "(max-width: 767px)"
+                    ).matches;
+
+
+                const mobileContainer =
+                    document.getElementById(
+                        "mobile-card-container"
+                    );
+
+
+                const desktopContainer =
+                    document.getElementById(
+                        "desktop-table-container"
+                    );
+
+
+                if (isMobile) {
+
+                    mobileContainer
+                        .querySelectorAll("input")
+                        .forEach(input => {
+
+                            input.disabled = false;
+
+                        });
+
+
+                    desktopContainer
+                        .querySelectorAll("input")
+                        .forEach(input => {
+
+                            input.disabled = true;
+
+                        });
+
+                } else {
+
+                    mobileContainer
+                        .querySelectorAll("input")
+                        .forEach(input => {
+
+                            input.disabled = true;
+
+                        });
+
+
+                    desktopContainer
+                        .querySelectorAll("input")
+                        .forEach(input => {
+
+                            input.disabled = false;
+
+                        });
+
+                }
+
+            }
+        );
 
         qcForm.addEventListener("submit", function () {
 
@@ -857,6 +972,32 @@
             }
 
         });
+        // =====================================================
+        // SINKRONISASI NAMA PEMERIKSA
+        // =====================================================
+
+        const examinerNameInput =
+            document.getElementById("examinerName");
+
+        const examinerNameHidden =
+            document.getElementById("examinerNameHidden");
+
+        if (
+            examinerNameInput &&
+            examinerNameHidden
+        ) {
+
+            examinerNameInput.addEventListener(
+                "input",
+                function () {
+
+                    examinerNameHidden.value =
+                        examinerNameInput.value.trim();
+
+                }
+            );
+
+        }
 
     </script>
 
