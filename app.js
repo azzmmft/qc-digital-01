@@ -36,6 +36,6 @@ app.get("/", (req, res) => {
     res.redirect("/login");
 });
 
-app.listen(PORT, () => {
-    console.log(`QC Digital running at http://localhost:${PORT}`);
+app.listen(PORT, "0.0.0.0", () => {
+    console.log(`QC Digital running on port ${PORT}`);
 });

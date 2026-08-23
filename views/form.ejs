@@ -518,7 +518,7 @@
             <input
                 type="hidden"
                 name="date"
-                value="<%= dateISO %>">>
+                value="<%= dateISO %>">
             <input
                 type="hidden"
                 name="product"
@@ -819,38 +819,155 @@
          * minimal salah satu inputnya memiliki nilai.
          */
 
-        function updateProgress() {
+        // =====================================================
+        // SEQUENTIAL ROW
+        // =====================================================
 
-            const rows =
-                new Set();
+        function isRowComplete(rowNumber) {
 
+            const product =
+                "<%= selectedProduct %>";
+
+            // Ambil semua input untuk row ini
+            const inputs =
+                document.querySelectorAll(
+                    `[data-row="${rowNumber}"]`
+                );
+
+            const values = {};
 
             inputs.forEach(input => {
 
-                if (input.value.trim() !== "") {
+                const field =
+                    input.dataset.field;
 
-                    rows.add(
-                        input.dataset.row
-                    );
+                if (!field) {
+                    return;
+                }
 
+                // Simpan nilai pertama yang tidak kosong
+                if (
+                    values[field] === undefined &&
+                    input.value.trim() !== ""
+                ) {
+                    values[field] =
+                        input.value.trim();
                 }
 
             });
 
 
-            const count =
-                rows.size;
+            // =================================================
+            // TPH
+            // Row selesai jika AA + OT terisi
+            // Retest TIDAK dihitung
+            // =================================================
 
+            if (product === "TPH") {
 
-            const progressText =
-                document.getElementById(
-                    "progressText"
+                return (
+                    values.AA !== undefined &&
+                    values.AA !== "" &&
+                    values.OT !== undefined &&
+                    values.OT !== ""
                 );
 
+            }
 
-            progressText.textContent =
-                `${count} / 24 row terisi`;
 
+            // =================================================
+            // LM
+            // Row selesai jika AA + OT + BBT + N2 terisi
+            // =================================================
+
+            return (
+                values.AA !== undefined &&
+                values.AA !== "" &&
+
+                values.OT !== undefined &&
+                values.OT !== "" &&
+
+                values.BBT !== undefined &&
+                values.BBT !== "" &&
+
+                values.N2 !== undefined &&
+                values.N2 !== ""
+            );
+        }
+
+
+        // =====================================================
+        // UPDATE STATUS LOCK ROW
+        // =====================================================
+
+        function updateSequentialRows() {
+
+            let previousRowComplete = true;
+
+
+            for (
+                let rowNumber = 1;
+                rowNumber <= 24;
+                rowNumber++
+            ) {
+
+                const rowInputs =
+                    document.querySelectorAll(
+                        `[data-row="${rowNumber}"]`
+                    );
+
+
+                if (rowInputs.length === 0) {
+                    continue;
+                }
+
+
+                // =============================================
+                // Row pertama selalu boleh diisi
+                // Row berikutnya hanya boleh jika row sebelumnya
+                // sudah selesai
+                // =============================================
+
+                const canEdit =
+                    previousRowComplete;
+
+
+                rowInputs.forEach(input => {
+
+                    // Retest TPH punya logic disabled sendiri.
+                    // Jangan kita ganggu di sini.
+                    const field =
+                        input.dataset.field;
+
+                    if (
+                        field === "AA_RETEST" ||
+                        field === "OT_RETEST"
+                    ) {
+                        return;
+                    }
+
+
+                    input.disabled =
+                        !canEdit;
+
+                });
+
+
+                // =============================================
+                // Tentukan apakah row ini sudah lengkap
+                // =============================================
+
+                const complete =
+                    isRowComplete(rowNumber);
+
+
+                previousRowComplete =
+                    complete;
+
+            }
+
+
+            updateProgress();
         }
 
 
@@ -869,7 +986,7 @@
 
                     validateInput(input);
 
-                    updateProgress();
+                    updateSequentialRows();
 
                 }
             );
@@ -882,7 +999,7 @@
          * Initial state.
          */
 
-        updateProgress();
+        updateSequentialRows();
 
         // =====================================================
         // PASTIKAN HANYA INPUT YANG TERLIHAT YANG DI-SUBMIT

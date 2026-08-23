@@ -121,6 +121,159 @@ function getSheetName(dateISO, line) {
     return `${dateISO}_L${line}`;
 }
 
+// ============================================================
+// JUMLAH ROW PER LINE
+// ============================================================
+
+function getRowCount(line) {
+
+    // Line 4 memiliki 24 row
+    if (String(line) === "4") {
+        return 24;
+    }
+
+    // Line lainnya memiliki 20 row
+    return 20;
+}
+
+// ============================================================
+// CEK APAKAH SATU ROW SUDAH LENGKAP
+// ============================================================
+
+function isQCRowComplete(rowData, product) {
+
+    if (!rowData) {
+        return false;
+    }
+
+
+    // ========================================================
+    // TPH
+    // AA + OT wajib
+    // Retest TIDAK dihitung
+    // ========================================================
+
+    if (product === "TPH") {
+
+        return (
+            String(rowData.AA || "").trim() !== "" &&
+            String(rowData.OT || "").trim() !== ""
+        );
+
+    }
+
+
+    // ========================================================
+    // LM
+    // AA + OT + BBT + N2 wajib
+    // ========================================================
+
+    return (
+        String(rowData.AA || "").trim() !== "" &&
+        String(rowData.OT || "").trim() !== "" &&
+        String(rowData.BBT || "").trim() !== "" &&
+        String(rowData.N2 || "").trim() !== ""
+    );
+}
+
+// ============================================================
+// CEK APAKAH SATU SHIFT SUDAH FULL
+// ============================================================
+
+function isShiftComplete(existingData, shift, product, rowCount) {
+
+    const shiftData =
+        existingData?.[String(shift)] ||
+        existingData?.[shift] ||
+        {};
+
+
+    for (
+        let rowNumber = 1;
+        rowNumber <= rowCount;
+        rowNumber++
+    ) {
+
+        const rowData =
+            shiftData[rowNumber];
+
+        if (
+            !isQCRowComplete(
+                rowData,
+                product
+            )
+        ) {
+
+            return false;
+
+        }
+
+    }
+
+
+    return true;
+}
+
+// ============================================================
+// VALIDASI ROW HARUS BERURUTAN
+// ============================================================
+
+function validateSequentialRows(
+    rows,
+    product,
+    rowCount
+) {
+
+    let foundIncompleteRow = false;
+
+
+    for (
+        let i = 0;
+        i < rowCount;
+        i++
+    ) {
+
+        const row =
+            rows[i] || {};
+
+
+        const complete =
+            isQCRowComplete(
+                row,
+                product
+            );
+
+
+        // ====================================================
+        // Kalau row sudah tidak lengkap,
+        // maka row setelahnya tidak boleh punya data
+        // ====================================================
+
+        if (!complete) {
+
+            foundIncompleteRow = true;
+
+            continue;
+
+        }
+
+
+        // ====================================================
+        // Kalau sebelumnya sudah ada row kosong/tidak lengkap,
+        // lalu sekarang ada row lengkap → lompat row
+        // ====================================================
+
+        if (foundIncompleteRow) {
+
+            throw new Error(
+                `Pengisian row harus berurutan. Row ${i + 1} terisi sementara row sebelumnya belum lengkap.`
+            );
+
+        }
+
+    }
+}
+
 
 // ============================================================
 // PARSE DATA GOOGLE SHEETS
@@ -513,6 +666,34 @@ router.get(
                 sheetData,
                 selectedProduct
             );
+
+        console.log("");
+        console.log("================================");
+        console.log("DEBUG DATA SETELAH SAVE");
+        console.log("================================");
+
+        console.log("Sheet Data:");
+        console.dir(sheetData, {
+            depth: null
+        });
+
+        console.log("Existing Data:");
+        console.dir(existingData, {
+            depth: null
+        });
+
+        console.log("Current Shift:");
+        console.log(currentShift);
+
+        console.log("Current Shift Data:");
+        console.dir(
+            existingData?.[String(currentShift)],
+            {
+                depth: null
+            }
+        );
+
+        console.log("================================");    
     
 
         console.log(
@@ -834,22 +1015,36 @@ router.post(
         }
 
 
-        if (formData.length !== 24) {
 
-            throw new Error(
-                `Data form harus memiliki 24 row. Diterima: ${formData.length}`
-            );
+        // ========================================
+        // JUMLAH ROW SESUAI LINE
+        // ========================================
 
-        }
+        const rowCount =
+            getRowCount(line);
+
+        console.log(
+            "Jumlah row untuk line:",
+            rowCount
+        );
 
 
         // ========================================
-        // BENTUKKAN DATA 24 ROW
+        // BENTUKKAN DATA
+        //
+        // Tidak harus semua row dikirim.
+        // Row yang belum diisi dianggap kosong.
         // ========================================
 
         const rows =
-            formData.map(
-                (item, index) => {
+            Array.from(
+                {
+                    length: rowCount
+                },
+                (_, index) => {
+
+                    const item =
+                        formData[index] || {};
 
                     const rowNumber =
                         index + 1;
@@ -924,6 +1119,22 @@ router.post(
 
                 }
             );
+
+
+        // ========================================
+        // VALIDASI URUTAN ROW
+        // ========================================
+
+        validateSequentialRows(
+            rows,
+            product,
+            rowCount
+        );
+
+
+        console.log(
+            "Validasi urutan row: BERHASIL"
+        );
 
 
         // ========================================

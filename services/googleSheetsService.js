@@ -188,10 +188,27 @@ async function saveShiftData(
     }
 
 
-    if (rows.length !== 24) {
+    /*
+     * Tidak lagi mewajibkan 24 row.
+     *
+     * Form boleh mengirim:
+     * - 1 row
+     * - 2 row
+     * - 5 row
+     * - 10 row
+     * - dst.
+     *
+     * Validasi jumlah maksimal row dilakukan
+     * berdasarkan line di formRoutes.
+     *
+     * Di service ini kita hanya memastikan
+     * bahwa array tidak kosong.
+     */
+
+    if (rows.length === 0) {
 
         throw new Error(
-            `Jumlah row harus 24. Diterima: ${rows.length}`
+            "Tidak ada data row yang akan disimpan."
         );
 
     }
@@ -331,11 +348,54 @@ async function saveShiftData(
     // WRITE DATA QC
     // ========================================
 
+    /*
+     * Kita hanya menulis row yang dikirim.
+     *
+     * Jadi kalau user mengisi 2 row:
+     *
+     * row 1 → tersimpan
+     * row 2 → tersimpan
+     *
+     * row 3 dst tidak disentuh.
+     */
+
+    const startRow =
+        getStartRowForShift(
+            Number(shift)
+        );
+
+
+    const endRow =
+        startRow + values.length - 1;
+
+
+    /*
+     * getShiftDataRange() sebelumnya kemungkinan
+     * mengembalikan range penuh 20/24 row.
+     *
+     * Karena sekarang kita hanya ingin menulis
+     * row yang diisi, kita buat range dinamis
+     * berdasarkan jumlah values.
+     */
+
+    const dynamicRange =
+        getDynamicShiftRange(
+            Number(shift),
+            values.length
+        );
+
+
+    console.log(
+        "Dynamic Range :",
+        dynamicRange
+    );
+
+
     await updateRange(
 
         sheetName,
 
-        range,
+        dynamicRange,
 
         values
 
@@ -356,11 +416,130 @@ async function saveShiftData(
         product,
 
         rowsSaved:
-            rows.length,
+            values.length,
 
-        range
+        range:
+            dynamicRange
 
     };
+
+}
+
+
+// ========================================
+// RANGE AWAL SHIFT
+// ========================================
+
+function getStartRowForShift(shift) {
+
+    /*
+     * Sesuaikan dengan struktur Google Sheets
+     * project kamu.
+     *
+     * Struktur yang selama ini digunakan:
+     *
+     * Shift 1 → baris data awal
+     * Shift 2 → setelah area Shift 1
+     * Shift 3 → setelah area Shift 2
+     *
+     * Karena mapping asli project sudah berada
+     * di sheetMapping.js, fungsi ini mengambil
+     * start row dari getShiftDataRange().
+     */
+
+    const fullRange =
+        getShiftDataRange(
+            shift
+        );
+
+
+    /*
+     * Contoh:
+     *
+     * "A7:D26"
+     *
+     * maka start row = 7
+     */
+
+    const match =
+        String(fullRange)
+            .match(/^[A-Z]+(\d+):/);
+
+
+    if (!match) {
+
+        throw new Error(
+            `Format range shift tidak dapat dibaca: ${fullRange}`
+        );
+
+    }
+
+
+    return Number(match[1]);
+
+}
+
+
+// ========================================
+// RANGE DINAMIS SHIFT
+// ========================================
+
+function getDynamicShiftRange(
+    shift,
+    rowCount
+) {
+
+    const fullRange =
+        getShiftDataRange(
+            shift
+        );
+
+
+    /*
+     * Contoh full range:
+     *
+     * A7:D26
+     *
+     * kita ambil:
+     *
+     * startColumn = A
+     * startRow    = 7
+     */
+
+    const match =
+        String(fullRange)
+            .match(/^([A-Z]+)(\d+):([A-Z]+)(\d+)$/);
+
+
+    if (!match) {
+
+        throw new Error(
+            `Format range shift tidak valid: ${fullRange}`
+        );
+
+    }
+
+
+    const startColumn =
+        match[1];
+
+    const startRow =
+        Number(match[2]);
+
+    const endColumn =
+        match[3];
+
+
+    const dynamicEndRow =
+        startRow +
+        rowCount -
+        1;
+
+
+    return (
+        `${startColumn}${startRow}:` +
+        `${endColumn}${dynamicEndRow}`
+    );
 
 }
 
@@ -421,13 +600,64 @@ async function saveExaminerName(
         );
 
 
+    /*
+     * Nama pemeriksa tidak perlu 24 row.
+     *
+     * Kita cukup menyimpan nama pada range
+     * yang memang sudah ditentukan oleh
+     * sheetMapping.js.
+     *
+     * Karena Google Sheets akan mengisi nilai
+     * sesuai range yang diberikan.
+     */
+
+    const fullRange =
+        String(range);
+
+
+    const match =
+        fullRange.match(
+            /^([A-Z]+)(\d+):([A-Z]+)(\d+)$/
+        );
+
+
+    if (!match) {
+
+        throw new Error(
+            `Format range examiner tidak valid: ${range}`
+        );
+
+    }
+
+
+    const startColumn =
+        match[1];
+
+    const startRow =
+        Number(match[2]);
+
+    const endColumn =
+        match[3];
+
+    const endRow =
+        Number(match[4]);
+
+
+    const rowCount =
+        endRow -
+        startRow +
+        1;
+
+
     // ========================================
-    // 24 ROW NAMA YANG SAMA
+    // BUAT DATA NAMA
     // ========================================
 
     const values =
         Array.from(
-            { length: 24 },
+            {
+                length: rowCount
+            },
             () => [name]
         );
 
