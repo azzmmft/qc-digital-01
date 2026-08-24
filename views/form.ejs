@@ -87,47 +87,60 @@
 
                 <% for (let shift = 1; shift <= 3; shift++) { %>
 
-                    <% if (shift === currentShift) { %>
+                    <%
+                        const isCurrent =
+                            shift === currentShift;
 
-                        <!-- SHIFT YANG SEDANG DIPILIH -->
-                        <a
-                            href="/form?line=<%= selectedLine %>&date=<%= encodeURIComponent(dateISO) %>&shift=<%= shift %>"
-                            class="bg-qcShift2 text-slate-900 font-bold text-xs px-3 py-1.5 rounded-md flex items-center gap-1.5 shadow-sm hover:opacity-90 transition-opacity">
+                        const isComplete =
+                            shiftStatus?.[shift] === true;
+                    %>
 
-                            <span>Shift <%= shift %></span>
+                    <a
+                        href="/form?line=<%= selectedLine %>&date=<%= encodeURIComponent(dateISO) %>&shift=<%= shift %>"
+                        class="
+                            font-bold text-xs px-3 py-1.5 rounded-md
+                            flex items-center gap-1.5
+                            transition-colors
+                            <%= isCurrent
+                                ? 'bg-qcShift2 text-slate-900 shadow-sm'
+                                : isComplete
+                                    ? 'bg-qcShift1 text-white'
+                                    : 'bg-qcShift3 text-slate-700 border border-slate-300'
+                            %>
+                        "
+                    >
 
+                        <span>
+                            Shift <%= shift %>
+                        </span>
+
+                        <% if (isComplete) { %>
+
+                            <!-- CHECK -->
                             <svg
                                 class="w-3.5 h-3.5"
                                 fill="none"
                                 stroke="currentColor"
-                                viewBox="0 0 24 24">
-
+                                viewBox="0 0 24 24"
+                            >
                                 <path
                                     stroke-linecap="round"
                                     stroke-linejoin="round"
                                     stroke-width="3"
-                                    d="M5 13l4 4L19 7" />
-
+                                    d="M5 13l4 4L19 7"
+                                />
                             </svg>
 
-                        </a>
+                        <% } else { %>
 
-                    <% } else { %>
-
-                        <!-- SHIFT LAIN -->
-                        <a
-                            href="/form?line=<%= selectedLine %>&date=<%= encodeURIComponent(dateISO) %>&shift=<%= shift %>"
-                            class="bg-qcShift3 text-slate-700 font-bold text-xs px-3 py-1.5 rounded-md flex items-center gap-1.5 border border-slate-300 hover:bg-slate-200 transition-colors">
-
-                            <span>Shift <%= shift %></span>
-
+                            <!-- BULATAN -->
                             <span
-                                class="w-2.5 h-2.5 rounded-full border border-slate-600 inline-block">
+                                class="w-2.5 h-2.5 rounded-full border border-current inline-block">
                             </span>
 
-                        </a>
+                        <% } %>
 
-                    <% } %>
+                    </a>
 
                 <% } %>
 
@@ -245,12 +258,17 @@
                 <%
                     const currentShiftData = existingData[currentShift] || {};
                     const isTPH = selectedProduct === "TPH";
+
+                    const rowCount =
+                        String(selectedLine) === "4"
+                            ? 24
+                            : 20;
                 %>
                 <!-- MOBILE -->
                 <div
                     id="mobile-card-container"
                     class="md:hidden space-y-3">
-                    <% for (let row = 1; row <= 24; row++) { %>
+                    <% for (let row = 1; row <= rowCount; row++) { %>
                         <div
                             class="bg-qcCardBg rounded-2xl p-3.5 border border-slate-300/60 shadow-sm">
                             <!-- Nomor -->
@@ -460,7 +478,7 @@
                                     : ["AA", "OT", "BBT", "N2"];
                             %>
 
-                            <% for (let row = 1; row <= 24; row++) { %>
+                            <% for (let row = 1; row <= rowCount; row++) { %>
 
                                 <tr class="border-b border-slate-200 hover:bg-slate-50">
 
@@ -536,7 +554,7 @@
                         type="submit"
                         class="w-full bg-qcGreen hover:bg-qcGreenHover text-white font-bold py-3 px-4 rounded-xl text-sm shadow-md transition-all active:scale-[0.99]">
                         <span id="progressText">
-                            0 / 24 row terisi
+                            0 / <%= rowCount %> row terisi
                         </span>
                         <span>
                             [ SIMPAN SHIFT <%= currentShift %> ]
@@ -903,11 +921,11 @@
         function updateSequentialRows() {
 
             let previousRowComplete = true;
-
+            const rowCount = Number("<%= rowCount %>");
 
             for (
                 let rowNumber = 1;
-                rowNumber <= 24;
+                rowNumber <= rowCount;
                 rowNumber++
             ) {
 

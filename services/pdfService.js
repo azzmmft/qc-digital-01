@@ -1196,12 +1196,43 @@ function drawMainTable(
 
 function drawFooter(
     doc,
-    y
+    y,
+    existingData
 ) {
 
     const x =
         MARGIN_LEFT;
+    
+        // ========================================
+        // NAMA PEMERIKSA PER SHIFT
+        // ========================================
 
+        function getExaminerName(shift) {
+
+            const shiftData =
+                existingData?.[String(shift)] || {};
+
+            for (
+                const rowNumber of Object.keys(shiftData)
+            ) {
+
+                const name =
+                    shiftData[rowNumber]?.examinerName;
+
+                if (
+                    name &&
+                    String(name).trim() !== ""
+                ) {
+
+                    return String(name).trim();
+
+                }
+
+            }
+
+            return "";
+
+        }
 
     // ========================================
     // NOTES
@@ -1312,6 +1343,12 @@ function drawFooter(
         index++
     ) {
 
+        const shift =
+            index + 1;
+
+        const examinerName =
+            getExaminerName(shift);
+
         drawCell(
             doc,
 
@@ -1325,10 +1362,14 @@ function drawFooter(
 
             signSpaceHeight,
 
-            "",
+            examinerName,
 
             {
-                border: true
+                border: true,
+                font: getFontRegular(),
+                fontSize: 7,
+                align: "center",
+                valign: "middle"
             }
         );
 
@@ -1518,13 +1559,15 @@ function createQCPDF(
         );
 
 
+
     // ========================================
     // FOOTER
     // ========================================
 
     drawFooter(
         doc,
-        y + 10
+        y + 10,
+        existingData
     );
 
 

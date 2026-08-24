@@ -666,6 +666,41 @@ router.get(
                 sheetData,
                 selectedProduct
             );
+        
+        // ====================================================
+        // STATUS SETIAP SHIFT
+        // ====================================================
+
+        const rowCount =
+            getRowCount(selectedLine);
+
+        const shiftStatus = {
+            1: isShiftComplete(
+                existingData,
+                1,
+                selectedProduct,
+                rowCount
+            ),
+
+            2: isShiftComplete(
+                existingData,
+                2,
+                selectedProduct,
+                rowCount
+            ),
+
+            3: isShiftComplete(
+                existingData,
+                3,
+                selectedProduct,
+                rowCount
+            )
+        };
+
+        console.log(
+            "Status Shift:",
+            shiftStatus
+        );    
 
         console.log("");
         console.log("================================");
@@ -750,6 +785,8 @@ router.get(
                 existingData,
 
                 examinerName,
+                
+                shiftStatus,
 
                 saved
 
