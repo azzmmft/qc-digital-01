@@ -28,8 +28,10 @@ app.use(express.json());
 // Routes
 const authRoutes = require("./routes/authRoutes");
 const formRoutes = require("./routes/formRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 app.use("/", authRoutes);
 app.use("/", formRoutes);
+app.use("/", adminRoutes);
 
 // Home sementara → redirect ke form
 app.get("/", (req, res) => {

@@ -1,48 +1,49 @@
-const {
-    findUserByUsername
-} = require("./services/userService");
+const bcrypt = require("bcrypt");
+const { pool } = require("./config/db");
 
-const {
-    pool
-} = require("./config/db");
+async function createUser() {
 
+    const username = "pengisi";
+    const password = "pengisi123";
+    const name = "Operator QC";
+    const role = "pengisi";
 
-async function main() {
+    const hashedPassword =
+        await bcrypt.hash(password, 10);
 
-    try {
+    await pool.query(
+        `
+        INSERT INTO users
+        (
+            username,
+            password,
+            name,
+            role
+        )
+        VALUES (?, ?, ?, ?)
+        `,
+        [
+            username,
+            hashedPassword,
+            name,
+            role
+        ]
+    );
 
-        const user =
-            await findUserByUsername("admin");
+    console.log("User pengisi berhasil dibuat.");
 
-
-        console.log("");
-        console.log("================================");
-        console.log("HASIL TEST USER");
-        console.log("================================");
-
-        console.log(user);
-
-        console.log("================================");
-        console.log("");
-
-
-    } catch (error) {
-
-        console.error(
-            "Gagal mengambil user:"
-        );
-
-        console.error(
-            error.message
-        );
-
-    } finally {
-
-        await pool.end();
-
-    }
+    await pool.end();
 
 }
 
+createUser()
+    .catch(error => {
 
-main();
+        console.error(
+            "Gagal membuat user:",
+            error
+        );
+
+        process.exit(1);
+
+    });

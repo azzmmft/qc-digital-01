@@ -63,14 +63,7 @@ router.post("/login", async (req, res) => {
         // USER TIDAK DITEMUKAN
         // ========================================
 
-        const passwordMatch =
-            await bcrypt.compare(
-                password,
-                user.password
-            );
-
-
-        if (!passwordMatch) {
+        if (!user) {
 
             return res.status(401).render(
                 "login",
@@ -86,7 +79,14 @@ router.post("/login", async (req, res) => {
         // CEK PASSWORD
         // ========================================
 
-        if (!user || !passwordMatch) {
+        const passwordMatch =
+            await bcrypt.compare(
+                password,
+                user.password
+            );
+
+
+        if (!passwordMatch) {
 
             return res.status(401).render(
                 "login",
@@ -118,9 +118,26 @@ router.post("/login", async (req, res) => {
             name: user.name,
             role: user.role
         };
-        // Untuk sementara testing:
-        return res.redirect("/select-report");
+        // ========================================
+        // REDIRECT BERDASARKAN ROLE
+        // ========================================
 
+        if (user.role === "admin") {
+
+            return res.redirect("/admin");
+
+        }
+
+        if (user.role === "pengisi") {
+
+            return res.redirect("/select-report");
+
+        }
+
+        // Role tidak dikenali
+        return res.status(403).send(
+            "Role user tidak dikenali."
+        );
     }
 
     catch (error) {

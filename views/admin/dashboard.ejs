@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>QC Digital - Admin</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+</head>
+
+
+<body class="bg-slate-100 text-slate-800 min-h-screen">
+
+
+    <!-- ====================================================== -->
+    <!-- HEADER -->
+    <!-- ====================================================== -->
+
+    <header class="bg-white border-b border-slate-200">
+
+        <div
+            class="max-w-6xl mx-auto px-4 sm:px-6 py-4
+                   flex items-center justify-between"
+        >
+
+            <div>
+
+                <h1 class="text-xl font-black text-slate-900">
+                    QC DIGITAL
+                </h1>
+
+                <p class="text-xs text-slate-500 font-semibold">
+                    Administrator Panel
+                </p>
+
+            </div>
+
+
+            <div class="flex items-center gap-4">
+
+                <div class="text-right">
+
+                    <p class="text-sm font-bold text-slate-800">
+                        <%= user.name %>
+                    </p>
+
+                    <p class="text-xs text-slate-500 uppercase">
+                        <%= user.role %>
+                    </p>
+
+                </div>
+
+
+                <a
+                    href="/logout"
+                    class="px-4 py-2 rounded-lg
+                           bg-red-50 text-red-600
+                           hover:bg-red-100
+                           text-sm font-bold"
+                >
+                    Logout
+                </a>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+
+    <!-- ====================================================== -->
+    <!-- CONTENT -->
+    <!-- ====================================================== -->
+
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+
+
+        <!-- Welcome -->
+
+        <div class="mb-8">
+
+            <h2 class="text-2xl font-black text-slate-900">
+                Dashboard Admin
+            </h2>
+
+            <p class="text-sm text-slate-500 mt-1">
+                Kelola pengguna dan pantau aktivitas pengisian QC.
+            </p>
+
+        </div>
+
+
+
+        <!-- ================================================== -->
+        <!-- MENU -->
+        <!-- ================================================== -->
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+
+            <!-- USER MANAGEMENT -->
+
+            <a
+                href="/admin/users"
+                class="bg-white rounded-2xl border border-slate-200
+                       shadow-sm hover:shadow-md
+                       p-6 transition-all"
+            >
+
+                <div
+                    class="w-12 h-12 rounded-xl
+                           bg-emerald-100 text-emerald-700
+                           flex items-center justify-center
+                           mb-5"
+                >
+
+                    <svg
+                        class="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M17 20h5v-2a4 4 0 00-4-4h-1M9 20H4v-2a4 4 0 014-4h1m8-5a4 4 0 11-8 0 4 4 0 018 0z"
+                        />
+
+                    </svg>
+
+                </div>
+
+
+                <h3 class="text-lg font-black text-slate-900">
+                    User Management
+                </h3>
+
+                <p class="text-sm text-slate-500 mt-1">
+                    Tambah, lihat, dan kelola akun pengguna QC.
+                </p>
+
+
+                <div
+                    class="mt-5 text-sm font-bold text-emerald-600"
+                >
+                    Kelola Pengguna →
+                </div>
+
+            </a>
+
+
+
+            <!-- LOG -->
+
+            <a
+                href="/admin/logs"
+                class="bg-white rounded-2xl border border-slate-200
+                       shadow-sm hover:shadow-md
+                       p-6 transition-all"
+            >
+
+                <div
+                    class="w-12 h-12 rounded-xl
+                           bg-blue-100 text-blue-700
+                           flex items-center justify-center
+                           mb-5"
+                >
+
+                    <svg
+                        class="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 5h6M9 9h6M9 13h6M9 17h4M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"
+                        />
+
+                    </svg>
+
+                </div>
+
+
+                <h3 class="text-lg font-black text-slate-900">
+                    Log Pengisian
+                </h3>
+
+                <p class="text-sm text-slate-500 mt-1">
+                    Pantau aktivitas pengisian data QC oleh pengguna.
+                </p>
+
+
+                <div
+                    class="mt-5 text-sm font-bold text-blue-600"
+                >
+                    Lihat Log →
+                </div>
+
+            </a>
+
+
+        </div>
+
+
+        <!-- ================================================== -->
+        <!-- FORM QC -->
+        <!-- ================================================== -->
+
+        <div class="mt-8">
+
+            <a
+                href="/select-report"
+                class="inline-flex items-center justify-center
+                       px-5 py-3 rounded-xl
+                       bg-emerald-600 hover:bg-emerald-700
+                       text-white font-bold text-sm
+                       shadow-sm"
+            >
+
+                Buka Form QC
+
+            </a>
+
+        </div>
+
+
+    </main>
+
+
+</body>
+
+</html>

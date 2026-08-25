@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>QC Digital - User Management</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+</head>
+
+
+<body class="bg-slate-100 text-slate-800 min-h-screen">
+
+
+    <!-- HEADER -->
+
+    <header class="bg-white border-b border-slate-200">
+
+        <div
+            class="max-w-6xl mx-auto px-4 sm:px-6 py-4
+                   flex items-center justify-between"
+        >
+
+            <div>
+
+                <h1 class="text-xl font-black text-slate-900">
+                    User Management
+                </h1>
+
+                <p class="text-xs text-slate-500">
+                    Kelola pengguna QC Digital
+                </p>
+
+            </div>
+
+
+            <a
+                href="/admin"
+                class="px-4 py-2 rounded-lg
+                       bg-slate-100 hover:bg-slate-200
+                       text-sm font-bold"
+            >
+                ← Dashboard
+            </a>
+
+        </div>
+
+    </header>
+
+
+
+    <!-- CONTENT -->
+
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+
+
+        <div class="bg-white rounded-2xl border border-slate-200
+                    shadow-sm overflow-hidden">
+
+
+            <div class="px-6 py-5 border-b border-slate-200
+            flex flex-col sm:flex-row
+            sm:items-center sm:justify-between gap-4">
+
+                <div>
+
+                    <h2 class="text-lg font-black text-slate-900">
+                        Daftar Pengguna
+                    </h2>
+
+                    <p class="text-sm text-slate-500 mt-1">
+                        Daftar akun yang terdaftar pada sistem.
+                    </p>
+
+                </div>
+
+                <a
+                    href="/admin/users/create"
+                    class="h-11 px-5 bg-emerald-600
+                        hover:bg-emerald-700
+                        text-white font-bold rounded-xl
+                        shadow-sm transition-all
+                        flex items-center justify-center"
+                >
+                    + Tambah User
+                </a>
+
+            </div>
+
+
+
+            <!-- TABLE -->
+
+            <div class="overflow-x-auto">
+
+                <table class="w-full text-sm">
+
+                    <thead class="bg-slate-50">
+
+                        <tr>
+
+                            <th class="px-6 py-3 text-left
+                                    text-xs font-bold uppercase
+                                    text-slate-500">
+                                ID
+                            </th>
+
+                            <th class="px-6 py-3 text-left
+                                    text-xs font-bold uppercase
+                                    text-slate-500">
+                                Username
+                            </th>
+
+                            <th class="px-6 py-3 text-left
+                                    text-xs font-bold uppercase
+                                    text-slate-500">
+                                Nama
+                            </th>
+
+                            <th class="px-6 py-3 text-left
+                                    text-xs font-bold uppercase
+                                    text-slate-500">
+                                Role
+                            </th>
+
+                            <th class="px-6 py-3 text-left
+                                    text-xs font-bold uppercase
+                                    text-slate-500">
+                                Dibuat
+                            </th>
+
+                            <th
+                                class="px-6 py-3 text-left
+                                    text-xs font-bold uppercase
+                                    text-slate-500"
+                            >
+                                Aksi
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody class="divide-y divide-slate-100">
+
+                        <% users.forEach(user => { %>
+
+                            <tr class="hover:bg-slate-50">
+
+                                <!-- ID -->
+                                <td class="px-6 py-4 font-bold">
+                                    <%= user.id %>
+                                </td>
+
+                                <!-- USERNAME -->
+                                <td class="px-6 py-4">
+                                    <%= user.username %>
+                                </td>
+
+                                <!-- NAMA -->
+                                <td class="px-6 py-4 font-semibold">
+                                    <%= user.name %>
+                                </td>
+
+                                <!-- ROLE -->
+                                <td class="px-6 py-4">
+
+                                    <% if (user.role === "admin") { %>
+
+                                        <span
+                                            class="inline-flex px-2.5 py-1
+                                                rounded-full
+                                                bg-purple-100
+                                                text-purple-700
+                                                text-xs font-bold"
+                                        >
+                                            Admin
+                                        </span>
+
+                                    <% } else { %>
+
+                                        <span
+                                            class="inline-flex px-2.5 py-1
+                                                rounded-full
+                                                bg-emerald-100
+                                                text-emerald-700
+                                                text-xs font-bold"
+                                        >
+                                            Pengisi
+                                        </span>
+
+                                    <% } %>
+
+                                </td>
+
+                                <!-- DIBUAT -->
+                                <td class="px-6 py-4 text-slate-500">
+                                    <%= user.created_at || "-" %>
+                                </td>
+
+                                <!-- AKSI -->
+                                <td class="px-5 py-4">
+
+                                    <div class="flex items-center gap-2">
+
+                                        <!-- EDIT -->
+                                        <a
+                                            href="/admin/users/<%= user.id %>/edit"
+                                            class="px-3 py-2 rounded-lg
+                                                bg-slate-100
+                                                hover:bg-slate-200
+                                                text-slate-700
+                                                text-xs font-bold"
+                                        >
+                                            Edit
+                                        </a>
+
+
+                                        <!-- HAPUS -->
+                                        <% if (Number(user.id) !== Number(currentUserId)) { %>
+
+                                            <form
+                                                action="/admin/users/<%= user.id %>/delete"
+                                                method="POST"
+                                                onsubmit="return confirm(
+                                                    'Yakin ingin menghapus user ini?'
+                                                );"
+                                            >
+
+                                                <button
+                                                    type="submit"
+                                                    class="px-3 py-2 rounded-lg
+                                                        bg-red-50
+                                                        hover:bg-red-100
+                                                        text-red-600
+                                                        text-xs font-bold"
+                                                >
+                                                    Hapus
+                                                </button>
+
+                                            </form>
+
+                                        <% } %>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        <% }) %>
+
+
+                        <!-- TIDAK ADA USER -->
+                        <% if (users.length === 0) { %>
+
+                            <tr>
+
+                                <td
+                                    colspan="6"
+                                    class="px-6 py-10 text-center
+                                        text-slate-400"
+                                >
+                                    Belum ada pengguna.
+                                </td>
+
+                            </tr>
+
+                        <% } %>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+    </main>
+
+
+</body>
+
+</html>
