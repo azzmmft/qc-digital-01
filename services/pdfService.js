@@ -134,7 +134,8 @@ function drawCell(
         align = "center",
         valign = "middle",
         border = true,
-        padding = 3
+        padding = 3,
+        color = "black"
     } = {}
 ) {
 
@@ -161,8 +162,13 @@ function drawCell(
 
     doc
         .font(font)
-        .fontSize(fontSize);
+        .fontSize(fontSize)
+        .fillColor(color);
 
+
+    // ========================================
+    // POSISI TEXT VERTICAL
+    // ========================================
 
     let textY =
         y + padding;
@@ -170,11 +176,27 @@ function drawCell(
 
     if (valign === "middle") {
 
+        // Hitung tinggi teks yang sebenarnya
+        // agar benar-benar berada di tengah cell
+        const textHeight =
+            doc.heightOfString(
+                formatValue(text),
+                {
+                    width:
+                        width -
+                        padding * 2,
+
+                    align,
+
+                    lineGap: 0
+                }
+            );
+
         textY =
             y +
             (
                 height -
-                fontSize * 1.15
+                textHeight
             ) / 2;
     }
 
@@ -225,6 +247,74 @@ function toNumber(value) {
     return isNaN(num)
         ? null
         : num;
+}
+
+
+// ========================================
+// CEK OUTSPEC
+// ========================================
+
+function isOutspec(
+    product,
+    field,
+    value
+) {
+
+    const num =
+        toNumber(value);
+
+    // Kalau kosong / bukan angka
+    // jangan dianggap OUTSPEC
+    if (num === null) {
+        return false;
+    }
+
+
+    // ========================================
+    // TPH
+    // ========================================
+
+    if (product === "TPH") {
+
+        if (field === "AA") {
+            return num < 320 || num > 370;
+        }
+
+        if (field === "OT") {
+            return num < 8 || num > 11;
+        }
+
+        return false;
+    }
+
+
+    // ========================================
+    // LM
+    // ========================================
+
+    if (product === "LM") {
+
+        if (field === "AA") {
+            return num < 200 || num > 230;
+        }
+
+        if (field === "OT") {
+            return num < 7 || num > 13;
+        }
+
+        if (field === "BBT") {
+            return num < 6 || num > 12;
+        }
+
+        if (field === "N2") {
+            return num < 0.4 || num > 0.6;
+        }
+
+    }
+
+
+    return false;
+
 }
 
 
@@ -631,7 +721,7 @@ function drawKopHeader(doc) {
         .font(getFontRegular())
         .fontSize(7)
         .text(
-            "No.            :",
+            "No.             :",
             col3X + 6,
             y + row1Height + 8,
             {
@@ -714,11 +804,11 @@ function drawProductInfo(
 
     doc
         .font(getFontRegular())
-        .fontSize(12)
+        .fontSize(13)
         .text(
             productName,
             x + 50,
-            y + 12
+            y + 11
         );
 
 
@@ -770,7 +860,7 @@ function drawProductInfo(
 
     doc
         .font(getFontRegular())
-        .fontSize(11)
+        .fontSize(12)
         .text(
             [
                 date,
@@ -779,7 +869,7 @@ function drawProductInfo(
                 .filter(Boolean)
                 .join(" / "),
             x + 145,
-            y + 32
+            y + 31
         );
 
 
@@ -792,9 +882,9 @@ function drawProductInfo(
 // TABEL UTAMA
 // ========================================
 
-const TABLE_ROW_HEIGHT = 15.5;
+const TABLE_ROW_HEIGHT = 16;
 
-const TABLE_HEADER_ROW_HEIGHT = 18;
+const TABLE_HEADER_ROW_HEIGHT = 19;
 
 const NO_COL_WIDTH = 42;
 
@@ -861,7 +951,9 @@ function drawMainTableHeader(
         "No.",
         {
             font: getFontBold(),
-            fontSize: 9
+            fontSize: 10,
+            align: "center",
+            valign: "middle"
         }
     );
 
@@ -879,7 +971,9 @@ function drawMainTableHeader(
         "Open Torque (lbf.inch)",
         {
             font: getFontBold(),
-            fontSize: 9
+            fontSize: 10,
+            align: "center",
+            valign: "middle"
         }
     );
 
@@ -915,7 +1009,9 @@ function drawMainTableHeader(
 
             {
                 font: getFontBold(),
-                fontSize: 9
+                fontSize: 10,
+                align: "center",
+                valign: "middle"
             }
         );
 
@@ -960,7 +1056,9 @@ function drawMainTableHeader(
 
                 {
                     font: getFontBold(),
-                    fontSize: 9
+                    fontSize: 10,
+                    align: "center",
+                    valign: "middle"
                 }
             );
 
@@ -983,7 +1081,8 @@ function drawMainTableDataRow(
     x,
     y,
     label,
-    getValueForShiftField
+    getValueForShiftField,
+    product
 ) {
 
     const subColWidth =
@@ -1003,7 +1102,9 @@ function drawMainTableDataRow(
         label,
         {
             font: getFontRegular(),
-            fontSize: 9
+            fontSize: 10,
+            align: "center",
+            valign: "middle"
         }
     );
 
@@ -1051,7 +1152,21 @@ function drawMainTableDataRow(
                 {
                     font:
                         getFontRegular(),
-                    fontSize: 9
+
+                    fontSize: 10,
+
+                    align: "center",
+
+                    valign: "middle",
+
+                    color:
+                        isOutspec(
+                            product,
+                            SUB_FIELDS[c],
+                            value
+                        )
+                            ? "red"
+                            : "black"
                 }
             );
 
@@ -1070,7 +1185,8 @@ function drawMainTable(
     doc,
     x,
     y,
-    existingData
+    existingData,
+    product
 ) {
 
     let currentY = y;
@@ -1116,7 +1232,9 @@ function drawMainTable(
 
                 return rowData[field];
 
-            }
+            },
+
+            product
         );
 
 
@@ -1174,7 +1292,9 @@ function drawMainTable(
 
                     return stats[key];
 
-                }
+                },
+
+                product
             );
 
 
@@ -1202,37 +1322,39 @@ function drawFooter(
 
     const x =
         MARGIN_LEFT;
-    
-        // ========================================
-        // NAMA PEMERIKSA PER SHIFT
-        // ========================================
 
-        function getExaminerName(shift) {
 
-            const shiftData =
-                existingData?.[String(shift)] || {};
+    // ========================================
+    // NAMA PEMERIKSA PER SHIFT
+    // ========================================
 
-            for (
-                const rowNumber of Object.keys(shiftData)
+    function getExaminerName(shift) {
+
+        const shiftData =
+            existingData?.[String(shift)] || {};
+
+        for (
+            const rowNumber of Object.keys(shiftData)
+        ) {
+
+            const name =
+                shiftData[rowNumber]?.examinerName;
+
+            if (
+                name &&
+                String(name).trim() !== ""
             ) {
 
-                const name =
-                    shiftData[rowNumber]?.examinerName;
-
-                if (
-                    name &&
-                    String(name).trim() !== ""
-                ) {
-
-                    return String(name).trim();
-
-                }
+                return String(name).trim();
 
             }
 
-            return "";
-
         }
+
+        return "";
+
+    }
+
 
     // ========================================
     // NOTES
@@ -1302,7 +1424,9 @@ function drawFooter(
         "QC Line",
         {
             font: getFontBold(),
-            fontSize: 8
+            fontSize: 8,
+            align: "center",
+            valign: "middle"
         }
     );
 
@@ -1316,7 +1440,9 @@ function drawFooter(
         "Diperiksa Oleh,",
         {
             font: getFontBold(),
-            fontSize: 8
+            fontSize: 8,
+            align: "center",
+            valign: "middle"
         }
     );
 
@@ -1367,7 +1493,7 @@ function drawFooter(
             {
                 border: true,
                 font: getFontRegular(),
-                fontSize: 7,
+                fontSize: 9,
                 align: "center",
                 valign: "middle"
             }
@@ -1427,7 +1553,11 @@ function drawFooter(
                     font:
                         getFontBold(),
 
-                    fontSize: 7
+                    fontSize: 9,
+
+                    align: "center",
+
+                    valign: "middle"
                 }
             );
 
@@ -1448,7 +1578,9 @@ function drawFooter(
         "UH/SH QC",
         {
             font: getFontBold(),
-            fontSize: 7
+            fontSize: 8,
+            align: "center",
+            valign: "middle"
         }
     );
 
@@ -1555,9 +1687,9 @@ function createQCPDF(
             doc,
             MARGIN_LEFT,
             y,
-            existingData
+            existingData,
+            product
         );
-
 
 
     // ========================================
