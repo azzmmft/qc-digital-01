@@ -17,6 +17,9 @@ const {
     createQCPDF
 } = require("../services/pdfService");
 
+const {
+    createActivityLog
+} = require("../services/userService");
 
 // ============================================================
 // HELPER
@@ -1222,6 +1225,41 @@ router.post(
             "================================"
         );
 
+        // ========================================
+        // ACTIVITY LOG
+        // ========================================
+
+        const currentUser =
+            req.session.user;
+
+        await createActivityLog({
+
+            userId:
+                currentUser.id,
+
+            username:
+                currentUser.username,
+
+            name:
+                currentUser.name,
+
+            action:
+                "Menyimpan data QC",
+
+            line,
+
+            productionDate:
+                dateISO,
+
+            shift,
+
+            product
+
+        });
+
+        console.log(
+            "Activity log berhasil disimpan."
+        );
 
         // ========================================
         // REDIRECT KEMBALI KE FORM

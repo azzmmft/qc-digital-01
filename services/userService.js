@@ -49,6 +49,7 @@ async function findUserById(id) {
     return rows[0] || null;
 }
 
+
 // ========================================
 // AMBIL SEMUA USER
 // ========================================
@@ -69,8 +70,8 @@ async function findAllUsers() {
     );
 
     return rows;
-
 }
+
 
 // ========================================
 // BUAT USER BARU
@@ -181,6 +182,82 @@ async function deleteUser(id) {
     return result;
 }
 
+
+// ========================================
+// CATAT ACTIVITY LOG
+// ========================================
+
+async function createActivityLog({
+    userId,
+    username,
+    name,
+    action,
+    line = null,
+    productionDate = null,
+    shift = null,
+    product = null
+}) {
+
+    const [result] = await pool.query(
+        `
+        INSERT INTO activity_logs
+            (
+                user_id,
+                username,
+                name,
+                action,
+                line,
+                production_date,
+                shift,
+                product
+            )
+        VALUES
+            (?, ?, ?, ?, ?, ?, ?, ?)
+        `,
+        [
+            userId,
+            username,
+            name,
+            action,
+            line,
+            productionDate,
+            shift,
+            product
+        ]
+    );
+
+    return result.insertId;
+}
+
+
+// ========================================
+// AMBIL SEMUA ACTIVITY LOG
+// ========================================
+
+async function findAllActivityLogs() {
+
+    const [rows] = await pool.query(
+        `
+        SELECT
+            id,
+            user_id,
+            username,
+            name,
+            action,
+            line,
+            production_date,
+            shift,
+            product,
+            created_at
+        FROM activity_logs
+        ORDER BY created_at DESC
+        `
+    );
+
+    return rows;
+}
+
+
 // ========================================
 // EXPORT
 // ========================================
@@ -199,6 +276,10 @@ module.exports = {
 
     updateUserPassword,
 
-    deleteUser
+    deleteUser,
+
+    createActivityLog,
+
+    findAllActivityLogs
 
 };

@@ -15,6 +15,10 @@ const {
     deleteUser
 } = require("../services/userService");
 
+const {
+    findAllLogs
+} = require("../services/logService");
+
 const bcrypt = require("bcrypt");
 
 
@@ -30,6 +34,46 @@ router.get(
         res.render("admin/dashboard", {
             user: req.session.user
         });
+
+    }
+);
+
+// ============================================================
+// ACTIVITY LOG
+// ============================================================
+
+router.get(
+    "/admin/logs",
+    requireAdmin,
+    async (req, res) => {
+
+        try {
+
+            const logs =
+                await findAllLogs();
+
+            return res.render(
+                "admin/logs",
+                {
+                    user: req.session.user,
+                    logs
+                }
+            );
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "Gagal mengambil log aktivitas:",
+                error
+            );
+
+            return res.status(500).send(
+                "Gagal mengambil log aktivitas."
+            );
+
+        }
 
     }
 );

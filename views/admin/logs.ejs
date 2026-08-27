@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>QC Digital - Log Aktivitas</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+</head>
+
+
+<body class="bg-slate-100 text-slate-800 min-h-screen">
+
+
+    <!-- ===================================================== -->
+    <!-- HEADER -->
+    <!-- ===================================================== -->
+
+    <header class="bg-white border-b border-slate-200">
+
+        <div
+            class="max-w-7xl mx-auto px-4 sm:px-6 py-4
+                   flex items-center justify-between gap-4"
+        >
+
+            <div>
+
+                <h1 class="text-xl font-black text-slate-900">
+                    Log Aktivitas
+                </h1>
+
+                <p class="text-xs text-slate-500">
+                    Riwayat aktivitas pengguna QC Digital
+                </p>
+
+            </div>
+
+
+            <a
+                href="/admin"
+                class="shrink-0 px-4 py-2 rounded-lg
+                       bg-slate-100 hover:bg-slate-200
+                       text-sm font-bold transition"
+            >
+                ← Dashboard
+            </a>
+
+        </div>
+
+    </header>
+
+
+
+    <!-- ===================================================== -->
+    <!-- CONTENT -->
+    <!-- ===================================================== -->
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+
+
+        <!-- ================================================= -->
+        <!-- CARD -->
+        <!-- ================================================= -->
+
+        <div
+            class="bg-white rounded-2xl
+                   border border-slate-200
+                   shadow-sm overflow-hidden"
+        >
+
+
+            <!-- ============================================= -->
+            <!-- TITLE -->
+            <!-- ============================================= -->
+
+            <div
+                class="px-6 py-5
+                       border-b border-slate-200"
+            >
+
+                <h2 class="text-lg font-black text-slate-900">
+                    Riwayat Aktivitas
+                </h2>
+
+                <p class="text-sm text-slate-500 mt-1">
+                    Catatan aktivitas pengguna dalam sistem.
+                </p>
+
+            </div>
+
+
+
+            <!-- ============================================= -->
+            <!-- TABLE -->
+            <!-- ============================================= -->
+
+            <div class="overflow-x-auto">
+
+                <table class="w-full text-sm">
+
+                    <thead class="bg-slate-50">
+
+                        <tr>
+
+                            <!-- WAKTU -->
+
+                            <th
+                                class="px-6 py-3 text-left
+                                       text-xs font-bold uppercase
+                                       tracking-wider text-slate-500
+                                       whitespace-nowrap"
+                            >
+                                Waktu
+                            </th>
+
+
+                            <!-- USER -->
+
+                            <th
+                                class="px-6 py-3 text-left
+                                       text-xs font-bold uppercase
+                                       tracking-wider text-slate-500"
+                            >
+                                User
+                            </th>
+
+
+                            <!-- AKTIVITAS -->
+
+                            <th
+                                class="px-6 py-3 text-left
+                                       text-xs font-bold uppercase
+                                       tracking-wider text-slate-500"
+                            >
+                                Aktivitas
+                            </th>
+
+
+                            <!-- DETAIL -->
+
+                            <th
+                                class="px-6 py-3 text-left
+                                       text-xs font-bold uppercase
+                                       tracking-wider text-slate-500"
+                            >
+                                Detail
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+
+                    <tbody class="divide-y divide-slate-100">
+
+
+                        <% if (logs && logs.length > 0) { %>
+
+
+                            <% logs.forEach(log => { %>
+
+
+                                <tr
+                                    class="hover:bg-slate-50 transition"
+                                >
+
+
+                                    <!-- ================================= -->
+                                    <!-- WAKTU -->
+                                    <!-- ================================= -->
+
+                                    <td
+                                        class="px-6 py-4
+                                               text-slate-500
+                                               whitespace-nowrap"
+                                    >
+
+                                        <div class="font-semibold text-slate-700">
+
+                                            <%= log.created_at
+                                                ? new Date(log.created_at)
+                                                    .toLocaleDateString("id-ID", {
+                                                        day: "2-digit",
+                                                        month: "short",
+                                                        year: "numeric"
+                                                    })
+                                                : "-"
+                                            %>
+
+                                        </div>
+
+
+                                        <div class="text-xs text-slate-400 mt-0.5">
+
+                                            <%= log.created_at
+                                                ? new Date(log.created_at)
+                                                    .toLocaleTimeString("id-ID", {
+                                                        hour: "2-digit",
+                                                        minute: "2-digit"
+                                                    })
+                                                : "-"
+                                            %>
+
+                                        </div>
+
+                                    </td>
+
+
+
+                                    <!-- ================================= -->
+                                    <!-- USER -->
+                                    <!-- ================================= -->
+
+                                    <td class="px-6 py-4">
+
+                                        <div
+                                            class="font-bold text-slate-800"
+                                        >
+                                            <%= log.name || "-" %>
+                                        </div>
+
+                                        <div
+                                            class="text-xs text-slate-400 mt-0.5"
+                                        >
+                                            <%= log.username || "-" %>
+                                        </div>
+
+                                    </td>
+
+
+
+                                    <!-- ================================= -->
+                                    <!-- AKTIVITAS -->
+                                    <!-- ================================= -->
+
+                                    <td class="px-6 py-4">
+
+
+                                        <% if (
+                                            log.action === "LOGIN"
+                                        ) { %>
+
+                                            <span
+                                                class="inline-flex
+                                                       px-2.5 py-1
+                                                       rounded-full
+                                                       bg-emerald-100
+                                                       text-emerald-700
+                                                       text-xs font-bold"
+                                            >
+                                                Login
+                                            </span>
+
+
+                                        <% } else if (
+                                            log.action === "LOGOUT"
+                                        ) { %>
+
+                                            <span
+                                                class="inline-flex
+                                                       px-2.5 py-1
+                                                       rounded-full
+                                                       bg-slate-100
+                                                       text-slate-600
+                                                       text-xs font-bold"
+                                            >
+                                                Logout
+                                            </span>
+
+
+                                        <% } else if (
+                                            log.action === "CREATE_USER"
+                                        ) { %>
+
+                                            <span
+                                                class="inline-flex
+                                                       px-2.5 py-1
+                                                       rounded-full
+                                                       bg-blue-100
+                                                       text-blue-700
+                                                       text-xs font-bold"
+                                            >
+                                                Tambah User
+                                            </span>
+
+
+                                        <% } else if (
+                                            log.action === "UPDATE_USER"
+                                        ) { %>
+
+                                            <span
+                                                class="inline-flex
+                                                       px-2.5 py-1
+                                                       rounded-full
+                                                       bg-amber-100
+                                                       text-amber-700
+                                                       text-xs font-bold"
+                                            >
+                                                Edit User
+                                            </span>
+
+
+                                        <% } else if (
+                                            log.action === "DELETE_USER"
+                                        ) { %>
+
+                                            <span
+                                                class="inline-flex
+                                                       px-2.5 py-1
+                                                       rounded-full
+                                                       bg-red-100
+                                                       text-red-700
+                                                       text-xs font-bold"
+                                            >
+                                                Hapus User
+                                            </span>
+
+
+                                        <% } else if (
+                                            log.action === "SAVE_QC"
+                                        ) { %>
+
+                                            <span
+                                                class="inline-flex
+                                                       px-2.5 py-1
+                                                       rounded-full
+                                                       bg-purple-100
+                                                       text-purple-700
+                                                       text-xs font-bold"
+                                            >
+                                                Simpan QC
+                                            </span>
+
+
+                                        <% } else { %>
+
+                                            <span
+                                                class="inline-flex
+                                                       px-2.5 py-1
+                                                       rounded-full
+                                                       bg-slate-100
+                                                       text-slate-600
+                                                       text-xs font-bold"
+                                            >
+                                                <%= log.action || "Aktivitas" %>
+                                            </span>
+
+                                        <% } %>
+
+
+                                    </td>
+
+
+
+                                    <!-- ================================= -->
+                                    <!-- DETAIL -->
+                                    <!-- ================================= -->
+
+                                    <td
+                                        class="px-6 py-4
+                                            text-slate-600
+                                            max-w-md"
+                                    >
+
+                                        <% if (log.action === "SAVE_QC") { %>
+
+                                            <div class="font-semibold text-slate-700">
+                                                Data QC disimpan
+                                            </div>
+
+                                            <div class="text-xs text-slate-500 mt-1 space-y-0.5">
+
+                                                <% if (log.line) { %>
+                                                    <div>
+                                                        Line:
+                                                        <span class="font-semibold">
+                                                            <%= log.line %>
+                                                        </span>
+                                                    </div>
+                                                <% } %>
+
+                                                <% if (log.production_date) { %>
+                                                    <div>
+                                                        Tanggal:
+                                                        <span class="font-semibold">
+                                                            <%= new Date(log.production_date)
+                                                                .toLocaleDateString("id-ID", {
+                                                                    day: "2-digit",
+                                                                    month: "long",
+                                                                    year: "numeric"
+                                                                })
+                                                            %>
+                                                        </span>
+                                                    </div>
+                                                <% } %>
+
+                                                <% if (log.shift) { %>
+                                                    <div>
+                                                        Shift:
+                                                        <span class="font-semibold">
+                                                            <%= log.shift %>
+                                                        </span>
+                                                    </div>
+                                                <% } %>
+
+                                                <% if (log.product) { %>
+                                                    <div>
+                                                        Produk:
+                                                        <span class="font-semibold">
+                                                            <%= log.product %>
+                                                        </span>
+                                                    </div>
+                                                <% } %>
+
+                                            </div>
+
+
+                                        <% } else if (log.action === "LOGIN") { %>
+
+                                            <div class="font-semibold text-slate-700">
+                                                User masuk ke sistem
+                                            </div>
+
+
+                                        <% } else if (log.action === "LOGOUT") { %>
+
+                                            <div class="font-semibold text-slate-700">
+                                                User keluar dari sistem
+                                            </div>
+
+
+                                        <% } else if (log.action === "CREATE_USER") { %>
+
+                                            <div class="font-semibold text-slate-700">
+                                                Membuat akun pengguna baru
+                                            </div>
+
+
+                                        <% } else if (log.action === "UPDATE_USER") { %>
+
+                                            <div class="font-semibold text-slate-700">
+                                                Mengubah informasi pengguna
+                                            </div>
+
+
+                                        <% } else if (log.action === "DELETE_USER") { %>
+
+                                            <div class="font-semibold text-slate-700">
+                                                Menghapus akun pengguna
+                                            </div>
+
+
+                                        <% } else { %>
+
+                                            <div class="font-semibold text-slate-700">
+                                                Aktivitas pengguna
+                                            </div>
+
+                                            <% if (
+                                                log.line ||
+                                                log.production_date ||
+                                                log.shift ||
+                                                log.product
+                                            ) { %>
+
+                                                <div class="text-xs text-slate-500 mt-1">
+
+                                                    <% if (log.line) { %>
+                                                        Line <%= log.line %>
+                                                    <% } %>
+
+                                                    <% if (log.shift) { %>
+                                                        · Shift <%= log.shift %>
+                                                    <% } %>
+
+                                                    <% if (log.product) { %>
+                                                        · <%= log.product %>
+                                                    <% } %>
+
+                                                </div>
+
+                                            <% } %>
+
+                                        <% } %>
+
+                                    </td>
+
+
+                                </tr>
+
+
+                            <% }) %>
+
+
+                        <% } else { %>
+
+
+                            <!-- ================================= -->
+                            <!-- EMPTY STATE -->
+                            <!-- ================================= -->
+
+                            <tr>
+
+                                <td
+                                    colspan="4"
+                                    class="px-6 py-12
+                                           text-center"
+                                >
+
+                                    <div
+                                        class="text-slate-400
+                                               font-semibold"
+                                    >
+                                        Belum ada aktivitas.
+                                    </div>
+
+                                    <div
+                                        class="text-xs text-slate-400 mt-1"
+                                    >
+                                        Aktivitas pengguna akan muncul di sini.
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+
+                        <% } %>
+
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+        </div>
+
+
+    </main>
+
+
+</body>
+
+</html>
