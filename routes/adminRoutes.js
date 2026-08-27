@@ -6,8 +6,16 @@ const {
 } = require("../middleware/authMiddleware");
 
 const {
-    findAllUsers
+    findAllUsers,
+    findUserByUsername,
+    findUserById,
+    createUser,
+    updateUser,
+    updateUserPassword,
+    deleteUser
 } = require("../services/userService");
+
+const bcrypt = require("bcrypt");
 
 
 // ============================================================
@@ -473,6 +481,98 @@ router.post(
 
             return res.status(500).send(
                 "Gagal reset password."
+            );
+
+        }
+
+    }
+);
+
+// ============================================================
+// HAPUS USER
+// ============================================================
+
+router.post(
+    "/admin/users/:id/delete",
+    requireAdmin,
+    async (req, res) => {
+
+        try {
+
+            const id =
+                Number(req.params.id);
+
+            // ========================================
+            // VALIDASI ID
+            // ========================================
+
+            if (!Number.isInteger(id)) {
+
+                return res.status(400).send(
+                    "ID user tidak valid."
+                );
+
+            }
+
+
+            // ========================================
+            // CEGAH ADMIN MENGHAPUS DIRI SENDIRI
+            // ========================================
+
+            if (
+                Number(req.session.user.id) === id
+            ) {
+
+                return res.status(400).send(
+                    "Anda tidak dapat menghapus akun sendiri."
+                );
+
+            }
+
+
+            // ========================================
+            // CEK USER
+            // ========================================
+
+            const targetUser =
+                await findUserById(id);
+
+            if (!targetUser) {
+
+                return res.status(404).send(
+                    "User tidak ditemukan."
+                );
+
+            }
+
+
+            // ========================================
+            // HAPUS USER
+            // ========================================
+
+            await deleteUser(id);
+
+
+            // ========================================
+            // KEMBALI KE USER MANAGEMENT
+            // ========================================
+
+            return res.redirect(
+                "/admin/users"
+            );
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "Gagal menghapus user:"
+            );
+
+            console.error(error);
+
+            return res.status(500).send(
+                "Gagal menghapus user."
             );
 
         }
