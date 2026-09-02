@@ -10,7 +10,8 @@ const LINE_PRODUCTS = require("../config/lineProducts");
 const {
     getSheetData,
     saveShiftData,
-    saveExaminerName
+    saveExaminerName,
+    ensureSheetExists
 } = require("../services/googleSheetsService");
 
 const {
@@ -641,11 +642,22 @@ router.get(
 
 
         // ====================================================
+        // AUTO CREATE SHEET DARI TEMPLATE
+        // ====================================================
+
+        await ensureSheetExists(
+            sheetName
+        );
+
+
+        // ====================================================
         // READ GOOGLE SHEETS
         // ====================================================
 
         const sheetData =
-            await getSheetData(sheetName);
+            await getSheetData(
+                sheetName
+            );
 
 
         console.log(

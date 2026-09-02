@@ -3,6 +3,8 @@ const sheets = require("../config/googleSheets");
 const spreadsheetId =
     process.env.GOOGLE_SPREADSHEET_ID;
 
+const TEMPLATE_SHEET_NAME = "TEMPLATE_SHEET";
+
 const {
     getDataRange,
     getShiftDataRange,
@@ -723,6 +725,240 @@ async function saveExaminerName(
 
 }
 
+// ========================================
+// AUTO CREATE SHEET DARI TEMPLATE
+// ========================================
+
+async function ensureSheetExists(sheetName) {
+
+    try {
+
+        // ========================================
+        // VALIDASI NAMA SHEET
+        // ========================================
+
+        if (!sheetName) {
+
+            throw new Error(
+                "Nama sheet tidak boleh kosong."
+            );
+
+        }
+
+
+        // ========================================
+        // AMBIL SEMUA SHEET
+        // ========================================
+
+        const spreadsheet =
+            await sheets.spreadsheets.get({
+
+                spreadsheetId,
+
+                fields:
+                    "sheets.properties"
+
+            });
+
+
+        const sheetList =
+            spreadsheet.data.sheets || [];
+
+
+        // ========================================
+        // CEK APAKAH SHEET SUDAH ADA
+        // ========================================
+
+        const existingSheet =
+            sheetList.find(
+                sheet =>
+                    sheet.properties.title === sheetName
+            );
+
+
+        if (existingSheet) {
+
+            console.log("");
+            console.log(
+                "Sheet sudah tersedia."
+            );
+
+            console.log(
+                "Sheet :",
+                sheetName
+            );
+
+            console.log(
+                "Sheet ID :",
+                existingSheet.properties.sheetId
+            );
+
+            return {
+
+                created: false,
+
+                sheetName,
+
+                sheetId:
+                    existingSheet.properties.sheetId
+
+            };
+
+        }
+
+
+        // ========================================
+        // CARI TEMPLATE
+        // ========================================
+
+        const templateSheet =
+            sheetList.find(
+                sheet =>
+                    sheet.properties.title ===
+                    TEMPLATE_SHEET_NAME
+            );
+
+
+        if (!templateSheet) {
+
+            throw new Error(
+                `Template sheet "${TEMPLATE_SHEET_NAME}" tidak ditemukan.`
+            );
+
+        }
+
+
+        const templateSheetId =
+            templateSheet.properties.sheetId;
+
+
+        // ========================================
+        // DUPLICATE TEMPLATE
+        // ========================================
+
+        console.log("");
+        console.log(
+            "================================"
+        );
+
+        console.log(
+            "AUTO CREATE SHEET"
+        );
+
+        console.log(
+            "================================"
+        );
+
+        console.log(
+            "Template :",
+            TEMPLATE_SHEET_NAME
+        );
+
+        console.log(
+            "Template ID :",
+            templateSheetId
+        );
+
+        console.log(
+            "New Sheet :",
+            sheetName
+        );
+
+
+        const response =
+            await sheets.spreadsheets.batchUpdate({
+
+                spreadsheetId,
+
+                requestBody: {
+
+                    requests: [
+
+                        {
+
+                            duplicateSheet: {
+
+                                sourceSheetId:
+                                    templateSheetId,
+
+                                newSheetName:
+                                    sheetName
+
+                            }
+
+                        }
+
+                    ]
+
+                }
+
+            });
+
+
+        // ========================================
+        // AMBIL SHEET HASIL DUPLICATE
+        // ========================================
+
+        const duplicatedSheet =
+            response.data.replies?.[0]
+                ?.duplicateSheet;
+
+
+        const newSheetProperties =
+            duplicatedSheet?.properties;
+
+
+        console.log("");
+        console.log(
+            "Sheet berhasil dibuat."
+        );
+
+        console.log(
+            "Sheet :",
+            sheetName
+        );
+
+        console.log(
+            "Sheet ID :",
+            newSheetProperties?.sheetId
+        );
+
+
+        return {
+
+            created: true,
+
+            sheetName,
+
+            sheetId:
+                newSheetProperties?.sheetId
+
+        };
+
+    }
+
+    catch (error) {
+
+        console.error("");
+        console.error(
+            "================================"
+        );
+
+        console.error(
+            "GAGAL AUTO CREATE SHEET"
+        );
+
+        console.error(
+            "================================"
+        );
+
+        console.error(error.message);
+
+        throw error;
+
+    }
+
+}
 
 // ========================================
 // EXPORT
@@ -738,6 +974,8 @@ module.exports = {
 
     saveShiftData,
 
-    saveExaminerName
+    saveExaminerName,
+
+    ensureSheetExists
 
 };

@@ -168,70 +168,6 @@
             </div>
         </header>
 
-        <% if (saved) { %>
-            <div
-                id="saveSuccess"
-                class="fixed top-5 right-5 z-[9999] w-[calc(100%-2rem)] max-w-sm
-                    flex items-start gap-3 p-4
-                    bg-white border border-emerald-200
-                    rounded-2xl shadow-2xl
-                    transform translate-x-0 opacity-100
-                    transition-all duration-500"
-            >
-                <!-- Icon -->
-                <div class="flex-shrink-0">
-                    <div class="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center">
-                        <svg
-                            class="w-5 h-5 text-emerald-600"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2.5"
-                                d="M5 13l4 4L19 7"
-                            />
-                        </svg>
-                    </div>
-                </div>
-
-                <!-- Text -->
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-bold text-emerald-800">
-                        Data berhasil disimpan
-                    </p>
-
-                    <p class="text-xs text-slate-500 mt-0.5">
-                        Data QC Shift <%= currentShift %> berhasil disimpan.
-                    </p>
-                </div>
-
-                <!-- Close -->
-                <button
-                    type="button"
-                    onclick="closeSaveNotification()"
-                    class="flex-shrink-0 text-slate-400 hover:text-slate-600 transition-colors"
-                    aria-label="Tutup notifikasi"
-                >
-                    <svg
-                        class="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M6 6l12 12M18 6L6 18"
-                        />
-                    </svg>
-                </button>
-            </div>
-        <% } %>
-
         <!-- FORM -->
         <form id="qcForm" method="POST" action="/form/save">
             <!-- NAMA PEMERIKSA -->
@@ -270,11 +206,18 @@
                     class="md:hidden space-y-3">
                     <% for (let row = 1; row <= rowCount; row++) { %>
                         <div
-                            class="bg-qcCardBg rounded-2xl p-3.5 border border-slate-300/60 shadow-sm">
+                            class="qc-row-card bg-qcCardBg rounded-2xl p-3.5 border border-slate-300/60 shadow-sm transition-all duration-200"
+                            data-row-card="<%= row %>">
                             <!-- Nomor -->
                             <div
                                 class="text-xs font-bold text-slate-700 mb-2">
                                 #<%= String(row).padStart(2, "0") %>
+                            </div>
+                            <!-- SEQUENTIAL ALERT -->
+                            <div
+                                class="row-alert hidden mb-2 px-3 py-2 rounded-xl
+                                    bg-qcAlertBg border border-qcAlertBorder
+                                    text-xs font-bold text-amber-800">
                             </div>
                             <div class="grid grid-cols-2 gap-x-3 gap-y-2">
                                 <div>
@@ -567,11 +510,11 @@
     <!-- JAVASCRIPT -->
     <script>
         /*
-         * Standard QC sementara.
-         *
-         * Nanti sebaiknya data ini berasal dari qcStandards.js
-         * melalui backend, bukan hard-code di frontend.
-         */
+        * =====================================================
+        * STANDARD QC
+        * =====================================================
+        */
+
         const qcStandard = {
             LM: {
                 AA: {
@@ -608,9 +551,14 @@
 
                 // BBT dan N2 tidak memiliki standard
             }
-
         };
 
+
+        /*
+        * =====================================================
+        * DATA LINE & PRODUCT
+        * =====================================================
+        */
 
         const selectedLine = "<%= selectedLine %>";
 
@@ -628,53 +576,68 @@
         console.log("PRODUCT TYPE:", productType);
 
 
+        /*
+        * =====================================================
+        * ELEMENT
+        * =====================================================
+        */
+
         const inputs =
             document.querySelectorAll(".qc-input");
 
+        const qcForm =
+            document.getElementById("qcForm");
+
+        const examinerNameInput =
+            document.getElementById("examinerName");
+
 
         /*
-         * Cek apakah nilai berada dalam standard.
-         */
+        * =====================================================
+        * VALIDASI STANDARD QC
+        * =====================================================
+        */
 
         function isOutOfStandard(field, value) {
 
             const standard =
                 qcStandard[productType]?.[field];
 
-
-            /*
-             * Kalau tidak ada standard,
-             * tidak dianggap error.
-             *
-             * Contoh:
-             * BBT/N2 pada TPH.
-             */
-
+            // Tidak ada standard
             if (!standard) {
                 return false;
             }
 
-
+            // Kosong bukan error
             if (value === "") {
                 return false;
             }
 
-
             const number =
                 Number(value);
 
-
+            // Bukan angka
             if (Number.isNaN(number)) {
                 return false;
             }
-
 
             return (
                 number < standard.min ||
                 number > standard.max
             );
-
         }
+
+
+        /*
+        * =====================================================
+        * UPDATE RETEST STATE
+        *
+        * TPH:
+        * AA keluar standard → AA* aktif
+        * OT keluar standard → OT* aktif
+        * =====================================================
+        */
+
         function updateRetestState(row) {
 
             // Hanya berlaku untuk TPH
@@ -682,29 +645,27 @@
                 return;
             }
 
+            const aaInputs =
+                document.querySelectorAll(
+                    `.qc-input[data-row="${row}"][data-field="AA"]`
+                );
 
-            // Ambil semua input AA pada row tersebut
-            const aaInputs = document.querySelectorAll(
-                `.qc-input[data-row="${row}"][data-field="AA"]`
-            );
+            const otInputs =
+                document.querySelectorAll(
+                    `.qc-input[data-row="${row}"][data-field="OT"]`
+                );
 
-            // Ambil semua input OT pada row tersebut
-            const otInputs = document.querySelectorAll(
-                `.qc-input[data-row="${row}"][data-field="OT"]`
-            );
+            const aaRetestInputs =
+                document.querySelectorAll(
+                    `.qc-input[data-row="${row}"][data-field="AA_RETEST"]`
+                );
 
-            // Ambil semua input AA*
-            const aaRetestInputs = document.querySelectorAll(
-                `.qc-input[data-row="${row}"][data-field="AA_RETEST"]`
-            );
+            const otRetestInputs =
+                document.querySelectorAll(
+                    `.qc-input[data-row="${row}"][data-field="OT_RETEST"]`
+                );
 
-            // Ambil semua input OT*
-            const otRetestInputs = document.querySelectorAll(
-                `.qc-input[data-row="${row}"][data-field="OT_RETEST"]`
-            );
-
-
-            // Kalau input tidak ditemukan, hentikan
+            // Kalau input tidak ditemukan
             if (
                 aaInputs.length === 0 ||
                 otInputs.length === 0 ||
@@ -714,17 +675,11 @@
                 return;
             }
 
+            const aaValue =
+                aaInputs[0].value;
 
-            /*
-            * Ambil nilai AA dan OT.
-            *
-            * Karena mobile dan desktop berisi
-            * data yang sama, kita cukup mengambil
-            * nilai dari input pertama.
-            */
-
-            const aaValue = aaInputs[0].value;
-            const otValue = otInputs[0].value;
+            const otValue =
+                otInputs[0].value;
 
 
             // =========================
@@ -753,12 +708,14 @@
                 input.disabled = !otOut;
 
             });
-
         }
 
+
         /*
-         * Update tampilan input.
-         */
+        * =====================================================
+        * VALIDASI TAMPILAN INPUT
+        * =====================================================
+        */
 
         function validateInput(input) {
 
@@ -768,14 +725,13 @@
             const field =
                 input.dataset.field;
 
-
             const wrapper =
                 input.parentElement;
 
-
             const errorDot =
-                wrapper.querySelector(".qc-error-dot");
-
+                wrapper
+                    ? wrapper.querySelector(".qc-error-dot")
+                    : null;
 
             const out =
                 isOutOfStandard(field, value);
@@ -793,10 +749,9 @@
                     "border-qcAlertBorder"
                 );
 
-
-                errorDot.classList.remove(
-                    "hidden"
-                );
+                if (errorDot) {
+                    errorDot.classList.remove("hidden");
+                }
 
             } else {
 
@@ -810,51 +765,45 @@
                     "border-slate-300"
                 );
 
-
-                errorDot.classList.add(
-                    "hidden"
-                );
-
+                if (errorDot) {
+                    errorDot.classList.add("hidden");
+                }
             }
-            // Update status AA*/OT* untuk TPH
+
+
+            // Update AA* / OT* untuk TPH
             if (
                 productType === "TPH" &&
                 (field === "AA" || field === "OT")
             ) {
+
                 updateRetestState(
                     input.dataset.row
                 );
             }
-
         }
 
 
-
         /*
-         * Hitung jumlah row yang sudah diisi.
-         *
-         * Sebuah row dianggap terisi jika
-         * minimal salah satu inputnya memiliki nilai.
-         */
-
-        // =====================================================
-        // SEQUENTIAL ROW
-        // =====================================================
+        * =====================================================
+        * CEK ROW LENGKAP
+        * =====================================================
+        */
 
         function isRowComplete(rowNumber) {
 
             const product =
                 "<%= selectedProduct %>";
 
-            // Ambil semua input untuk row ini
-            const inputs =
+            const rowInputs =
                 document.querySelectorAll(
                     `[data-row="${rowNumber}"]`
                 );
 
             const values = {};
 
-            inputs.forEach(input => {
+
+            rowInputs.forEach(input => {
 
                 const field =
                     input.dataset.field;
@@ -863,11 +812,17 @@
                     return;
                 }
 
-                // Simpan nilai pertama yang tidak kosong
+                /*
+                * Ambil nilai pertama yang tidak kosong.
+                * Karena mobile dan desktop memiliki
+                * input yang sama.
+                */
+
                 if (
                     values[field] === undefined &&
                     input.value.trim() !== ""
                 ) {
+
                     values[field] =
                         input.value.trim();
                 }
@@ -875,28 +830,37 @@
             });
 
 
-            // =================================================
-            // TPH
-            // Row selesai jika AA + OT terisi
-            // Retest TIDAK dihitung
-            // =================================================
+            /*
+            * =================================================
+            * TPH
+            *
+            * Row selesai jika:
+            * AA + OT
+            *
+            * AA* / OT* tidak dihitung
+            * =================================================
+            */
 
             if (product === "TPH") {
 
                 return (
                     values.AA !== undefined &&
                     values.AA !== "" &&
+
                     values.OT !== undefined &&
                     values.OT !== ""
                 );
-
             }
 
 
-            // =================================================
-            // LM
-            // Row selesai jika AA + OT + BBT + N2 terisi
-            // =================================================
+            /*
+            * =================================================
+            * LM
+            *
+            * Row selesai jika:
+            * AA + OT + BBT + N2
+            * =================================================
+            */
 
             return (
                 values.AA !== undefined &&
@@ -914,14 +878,19 @@
         }
 
 
-        // =====================================================
-        // UPDATE STATUS LOCK ROW
-        // =====================================================
+        /*
+        * =====================================================
+        * UPDATE SEQUENTIAL ROW
+        * =====================================================
+        */
 
         function updateSequentialRows() {
 
             let previousRowComplete = true;
-            const rowCount = Number("<%= rowCount %>");
+
+            const rowCount =
+                Number("<%= rowCount %>");
+
 
             for (
                 let rowNumber = 1;
@@ -940,22 +909,49 @@
                 }
 
 
-                // =============================================
-                // Row pertama selalu boleh diisi
-                // Row berikutnya hanya boleh jika row sebelumnya
-                // sudah selesai
-                // =============================================
+                /*
+                * Row pertama selalu boleh diisi.
+                *
+                * Row berikutnya hanya boleh diisi
+                * jika row sebelumnya sudah lengkap.
+                */
 
                 const canEdit =
                     previousRowComplete;
 
 
+                const rowCard =
+                    document.querySelector(
+                        `[data-row-card="${rowNumber}"]`
+                    );
+
+
+                if (rowCard) {
+
+                    rowCard.classList.toggle(
+                        "opacity-70",
+                        !canEdit
+                    );
+
+                    rowCard.classList.toggle(
+                        "cursor-pointer",
+                        !canEdit
+                    );
+                }
+
+
                 rowInputs.forEach(input => {
 
-                    // Retest TPH punya logic disabled sendiri.
-                    // Jangan kita ganggu di sini.
                     const field =
                         input.dataset.field;
+
+
+                    /*
+                    * Retest TPH memiliki logic disabled
+                    * sendiri.
+                    *
+                    * Jangan diubah oleh sequential system.
+                    */
 
                     if (
                         field === "AA_RETEST" ||
@@ -971,17 +967,15 @@
                 });
 
 
-                // =============================================
-                // Tentukan apakah row ini sudah lengkap
-                // =============================================
+                /*
+                * Tentukan apakah row ini sudah lengkap.
+                */
 
                 const complete =
                     isRowComplete(rowNumber);
 
-
                 previousRowComplete =
                     complete;
-
             }
 
 
@@ -989,14 +983,188 @@
         }
 
 
+        /*
+        * =====================================================
+        * UPDATE PROGRESS
+        * =====================================================
+        */
+
+        function updateProgress() {
+
+            const rowCount =
+                Number("<%= rowCount %>");
+
+            let completedRows = 0;
+
+
+            for (
+                let row = 1;
+                row <= rowCount;
+                row++
+            ) {
+
+                if (isRowComplete(row)) {
+                    completedRows++;
+                }
+            }
+
+
+            const progressText =
+                document.getElementById("progressText");
+
+
+            if (progressText) {
+
+                progressText.textContent =
+                    `${completedRows} / ${rowCount} row terisi`;
+            }
+        }
+
 
         /*
-         * Event input.
-         */
+        * =====================================================
+        * ALERT ROW TERKUNCI
+        * =====================================================
+        */
+
+        function showRowAlert(rowNumber, previousRow) {
+
+            const card =
+                document.querySelector(
+                    `[data-row-card="${rowNumber}"]`
+                );
+
+
+            if (!card) {
+                return;
+            }
+
+
+            const alert =
+                card.querySelector(".row-alert");
+
+
+            if (!alert) {
+                return;
+            }
+
+
+            alert.textContent =
+                `⚠️ Isi Row ${String(previousRow).padStart(2, "0")} terlebih dahulu.`;
+
+            alert.classList.remove("hidden");
+
+
+            card.classList.add(
+                "border-amber-400",
+                "ring-2",
+                "ring-amber-200"
+            );
+
+
+            setTimeout(() => {
+
+                alert.classList.add("hidden");
+
+                card.classList.remove(
+                    "border-amber-400",
+                    "ring-2",
+                    "ring-amber-200"
+                );
+
+            }, 2500);
+        }
+
+
+        /*
+        * =====================================================
+        * CLICK ROW TERKUNCI
+        * =====================================================
+        */
+
+        document
+            .querySelectorAll(".qc-row-card")
+            .forEach(card => {
+
+                card.addEventListener(
+                    "click",
+                    function (event) {
+
+                        const rowNumber =
+                            Number(this.dataset.rowCard);
+
+
+                        // Cari row pertama yang belum lengkap
+                        let previousIncompleteRow =
+                            null;
+
+
+                        for (
+                            let row = 1;
+                            row < rowNumber;
+                            row++
+                        ) {
+
+                            if (!isRowComplete(row)) {
+
+                                previousIncompleteRow =
+                                    row;
+
+                                break;
+                            }
+                        }
+
+
+                        /*
+                        * Kalau semua row sebelumnya
+                        * sudah lengkap, row boleh diisi.
+                        */
+
+                        if (
+                            previousIncompleteRow === null
+                        ) {
+                            return;
+                        }
+
+
+                        /*
+                        * Kalau klik input yang aktif,
+                        * jangan tampilkan alert.
+                        */
+
+                        const clickedInput =
+                            event.target.closest(".qc-input");
+
+
+                        if (
+                            clickedInput &&
+                            !clickedInput.disabled
+                        ) {
+                            return;
+                        }
+
+
+                        showRowAlert(
+                            rowNumber,
+                            previousIncompleteRow
+                        );
+
+                    }
+                );
+            });
+
+
+        /*
+        * =====================================================
+        * EVENT INPUT
+        * =====================================================
+        */
 
         inputs.forEach(input => {
 
+            // Validasi awal
             validateInput(input);
+
 
             input.addEventListener(
                 "input",
@@ -1012,53 +1180,384 @@
         });
 
 
-
         /*
-         * Initial state.
-         */
+        * =====================================================
+        * INITIAL STATE
+        * =====================================================
+        */
 
         updateSequentialRows();
 
-        // =====================================================
-        // PASTIKAN HANYA INPUT YANG TERLIHAT YANG DI-SUBMIT
-        // =====================================================
 
-        const qcForm =
-            document.getElementById("qcForm");
+        /*
+        * =====================================================
+        * NOTIFICATION SYSTEM
+        *
+        * Digunakan untuk:
+        * - Success save
+        * - Error nama pemeriksa
+        *
+        * Popup akan otomatis hilang setelah 3 detik.
+        * =====================================================
+        */
 
-        qcForm.addEventListener(
-            "submit",
-            function () {
+        function showNotification({
+            type = "success",
+            title = "",
+            message = ""
+        }) {
 
-                // =========================================
-                // SINKRONKAN NAMA PEMERIKSA
-                // =========================================
+            /*
+            * Hapus notification lama
+            * supaya tidak menumpuk.
+            */
 
-                if (
-                    examinerNameInput &&
-                    examinerNameHidden
-                ) {
-
-                    examinerNameHidden.value =
-                        examinerNameInput.value.trim();
-
-                }
-
-
-                // =========================================
-                // DEBUG
-                // =========================================
-
-                console.log(
-                    "Examiner sebelum submit:",
-                    examinerNameHidden?.value
+            const oldNotification =
+                document.getElementById(
+                    "qcNotification"
                 );
 
 
-                // =========================================
-                // PASTIKAN HANYA INPUT YANG TERLIHAT
-                // YANG DI-SUBMIT
-                // =========================================
+            if (oldNotification) {
+                oldNotification.remove();
+            }
+
+
+            const isError =
+                type === "error";
+
+
+            const notification =
+                document.createElement("div");
+
+
+            notification.id =
+                "qcNotification";
+
+
+            notification.className = `
+                fixed top-5 right-5 z-[9999]
+                w-[calc(100%-2rem)] max-w-sm
+                flex items-start gap-3 p-4
+                bg-white
+                border ${isError
+                    ? "border-red-200"
+                    : "border-emerald-200"}
+                rounded-2xl
+                shadow-2xl
+                transform translate-x-0 opacity-100
+                transition-all duration-500
+            `;
+
+
+            notification.innerHTML = `
+
+                <!-- ICON -->
+
+                <div class="flex-shrink-0">
+
+                    <div class="
+                        w-9 h-9 rounded-full
+                        ${isError
+                            ? "bg-red-100"
+                            : "bg-emerald-100"}
+                        flex items-center justify-center
+                    ">
+
+                        ${
+                            isError
+
+                            ? `
+                                <svg
+                                    class="w-5 h-5 text-red-600"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2.5"
+                                        d="M6 18L18 6M6 6l12 12"
+                                    />
+                                </svg>
+                            `
+
+                            : `
+                                <svg
+                                    class="w-5 h-5 text-emerald-600"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2.5"
+                                        d="M5 13l4 4L19 7"
+                                    />
+                                </svg>
+                            `
+                        }
+
+                    </div>
+
+                </div>
+
+
+                <!-- TEXT -->
+
+                <div class="flex-1 min-w-0">
+
+                    <p class="
+                        text-sm font-bold
+                        ${isError
+                            ? "text-red-800"
+                            : "text-emerald-800"}
+                    ">
+                        ${title}
+                    </p>
+
+                    <p class="text-xs text-slate-500 mt-0.5">
+                        ${message}
+                    </p>
+
+                </div>
+
+
+                <!-- CLOSE -->
+
+                <button
+                    type="button"
+                    class="
+                        flex-shrink-0
+                        text-slate-400
+                        hover:text-slate-600
+                        transition-colors
+                    "
+                    aria-label="Tutup notifikasi"
+                >
+
+                    <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M6 6l12 12M18 6L6 18"
+                        />
+                    </svg>
+
+                </button>
+            `;
+
+
+            document.body.appendChild(
+                notification
+            );
+
+
+            /*
+            * Tombol close
+            */
+
+            const closeButton =
+                notification.querySelector("button");
+
+
+            if (closeButton) {
+
+                closeButton.addEventListener(
+                    "click",
+                    closeNotification
+                );
+            }
+
+
+            /*
+            * Auto hide setelah 3 detik
+            */
+
+            setTimeout(() => {
+
+                closeNotification();
+
+            }, 3000);
+        }
+
+
+        /*
+        * =====================================================
+        * CLOSE NOTIFICATION
+        * =====================================================
+        */
+
+        function closeNotification() {
+
+            const notification =
+                document.getElementById(
+                    "qcNotification"
+                );
+
+
+            if (!notification) {
+                return;
+            }
+
+
+            notification.classList.remove(
+                "translate-x-0",
+                "opacity-100"
+            );
+
+
+            notification.classList.add(
+                "translate-x-full",
+                "opacity-0"
+            );
+
+
+            setTimeout(() => {
+
+                if (notification) {
+                    notification.remove();
+                }
+
+            }, 500);
+        }
+
+
+        /*
+        * =====================================================
+        * NOTIFICATION SAVE DARI SERVER
+        *
+        * HANYA muncul kalau saved === true.
+        *
+        * Jadi ketika pertama kali membuka form
+        * dan belum ada data yang disimpan,
+        * popup TIDAK akan muncul.
+        * =====================================================
+        */
+
+        const saveStatus =
+            <%= saved ? "true" : "false" %>;
+
+
+        if (saveStatus) {
+
+            showNotification({
+
+                type: "success",
+
+                title:
+                    "Data berhasil disimpan",
+
+                message:
+                    "Data QC Shift <%= currentShift %> berhasil disimpan."
+
+            });
+        }
+
+
+        /*
+        * =====================================================
+        * SUBMIT FORM
+        * =====================================================
+        */
+
+        qcForm.addEventListener(
+            "submit",
+            function (event) {
+
+                /*
+                * =============================================
+                * 1. CEK NAMA PEMERIKSA
+                * =============================================
+                */
+
+                const examinerName =
+                    examinerNameInput
+                        ? examinerNameInput.value.trim()
+                        : "";
+
+
+                /*
+                * Nama pemeriksa kosong
+                */
+
+                if (!examinerName) {
+
+                    /*
+                    * Hentikan submit.
+                    */
+
+                    event.preventDefault();
+
+
+                    /*
+                    * Fokus ke input pemeriksa.
+                    */
+
+                    if (examinerNameInput) {
+
+                        examinerNameInput.focus();
+
+                        examinerNameInput.classList.add(
+                            "ring-2",
+                            "ring-red-300",
+                            "border-red-400"
+                        );
+
+
+                        /*
+                        * Hilangkan highlight setelah
+                        * 2.5 detik.
+                        */
+
+                        setTimeout(() => {
+
+                            examinerNameInput.classList.remove(
+                                "ring-2",
+                                "ring-red-300",
+                                "border-red-400"
+                            );
+
+                        }, 2500);
+                    }
+
+
+                    /*
+                    * Popup error dengan desain
+                    * SAMA seperti popup save.
+                    */
+
+                    showNotification({
+
+                        type: "error",
+
+                        title:
+                            "Nama pemeriksa belum diisi",
+
+                        message:
+                            "Silakan isi nama pemeriksa terlebih dahulu sebelum menyimpan data."
+
+                    });
+
+
+                    return;
+                }
+
+
+                /*
+                * =============================================
+                * 2. PASTIKAN HANYA INPUT YANG TERLIHAT
+                *    YANG DI-SUBMIT
+                * =============================================
+                */
 
                 const isMobile =
                     window.matchMedia(
@@ -1080,6 +1579,11 @@
 
                 if (isMobile) {
 
+                    /*
+                    * HP:
+                    * Aktifkan input mobile.
+                    */
+
                     mobileContainer
                         .querySelectorAll("input")
                         .forEach(input => {
@@ -1088,6 +1592,10 @@
 
                         });
 
+
+                    /*
+                    * Nonaktifkan desktop.
+                    */
 
                     desktopContainer
                         .querySelectorAll("input")
@@ -1099,6 +1607,11 @@
 
                 } else {
 
+                    /*
+                    * Desktop:
+                    * Nonaktifkan mobile.
+                    */
+
                     mobileContainer
                         .querySelectorAll("input")
                         .forEach(input => {
@@ -1108,6 +1621,10 @@
                         });
 
 
+                    /*
+                    * Aktifkan desktop.
+                    */
+
                     desktopContainer
                         .querySelectorAll("input")
                         .forEach(input => {
@@ -1115,131 +1632,16 @@
                             input.disabled = false;
 
                         });
-
                 }
+
+
+                console.log(
+                    "Examiner sebelum submit:",
+                    examinerName
+                );
 
             }
         );
-
-        qcForm.addEventListener("submit", function () {
-
-            const isMobile =
-                window.matchMedia("(max-width: 767px)").matches;
-
-            const mobileContainer =
-                document.getElementById("mobile-card-container");
-
-            const desktopContainer =
-                document.getElementById("desktop-table-container");
-
-            if (isMobile) {
-
-                // HP:
-                // Aktifkan input mobile
-                // Nonaktifkan input desktop
-
-                mobileContainer
-                    .querySelectorAll("input")
-                    .forEach(input => {
-                        input.disabled = false;
-                    });
-
-                desktopContainer
-                    .querySelectorAll("input")
-                    .forEach(input => {
-                        input.disabled = true;
-                    });
-
-            } else {
-
-                // DESKTOP:
-                // Nonaktifkan input mobile
-                // Aktifkan input desktop
-
-                mobileContainer
-                    .querySelectorAll("input")
-                    .forEach(input => {
-                        input.disabled = true;
-                    });
-
-                desktopContainer
-                    .querySelectorAll("input")
-                    .forEach(input => {
-                        input.disabled = false;
-                    });
-
-            }
-
-        });
-        // =====================================================
-        // SINKRONISASI NAMA PEMERIKSA
-        // =====================================================
-
-        const examinerNameInput =
-            document.getElementById("examinerName");
-
-        const examinerNameHidden =
-            document.getElementById("examinerNameHidden");
-
-        if (
-            examinerNameInput &&
-            examinerNameHidden
-        ) {
-
-            examinerNameInput.addEventListener(
-                "input",
-                function () {
-
-                    examinerNameHidden.value =
-                        examinerNameInput.value.trim();
-
-                }
-            );
-
-        }
-
-        // NOTIFIKASI DATA BERHASIL DISIMPAN
-
-        function closeSaveNotification() {
-
-            const notification =
-                document.getElementById("saveSuccess");
-
-            if (!notification) {
-                return;
-            }
-
-            notification.classList.remove(
-                "translate-x-0",
-                "opacity-100"
-            );
-
-            notification.classList.add(
-                "translate-x-full",
-                "opacity-0"
-            );
-
-            setTimeout(() => {
-
-                notification.remove();
-
-            }, 500);
-        }
-
-
-        // Auto hide setelah 3 detik
-        const saveNotification =
-            document.getElementById("saveSuccess");
-
-        if (saveNotification) {
-
-            setTimeout(() => {
-
-                closeSaveNotification();
-
-            }, 3000);
-
-        }
 
     </script>
 
