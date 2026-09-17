@@ -22,6 +22,11 @@ const {
     createActivityLog
 } = require("../services/userService");
 
+const {
+    getShiftStatus,
+    isShiftEditable
+} = require("../config/shiftSchedule");
+
 // ============================================================
 // HELPER
 // ============================================================
@@ -711,7 +716,11 @@ router.get(
                 rowCount
             )
         };
-
+        const currentShiftStatus =
+            getShiftStatus(
+                dateISO,
+                currentShift
+            );
         console.log(
             "Status Shift:",
             shiftStatus
@@ -802,6 +811,8 @@ router.get(
                 examinerName,
                 
                 shiftStatus,
+
+                currentShiftStatus,
 
                 saved
 
@@ -1018,7 +1029,25 @@ router.post(
             );
 
         }
+        // ========================================
+        // VALIDASI WAKTU SHIFT
+        // ========================================
 
+        const shiftEditable =
+            isShiftEditable(
+                dateISO,
+                shift
+            );
+
+        if (!shiftEditable) {
+
+            throw new Error(
+                `Pengisian tidak dapat dilakukan. ` +
+                `Shift ${shift} untuk tanggal produksi ${dateISO} ` +
+                `sedang tidak dalam waktu pengisian.`
+            );
+
+        }
 
         // ========================================
         // NAMA SHEET DINAMIS
